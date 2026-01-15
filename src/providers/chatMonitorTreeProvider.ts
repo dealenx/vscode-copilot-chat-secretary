@@ -1,6 +1,10 @@
 // providers/chatMonitorTreeProvider.ts
 import * as vscode from "vscode";
-import CopilotChatAnalyzer, { type UserRequest } from "copilot-chat-analyzer";
+import CopilotChatAnalyzer, {
+  type UserRequest,
+  type DialogStatusType,
+  DialogStatus,
+} from "copilot-chat-analyzer";
 import {
   ChatMonitorData,
   ChatMonitorSubscriber,
@@ -29,7 +33,7 @@ export class ChatMonitorTreeItem extends vscode.TreeItem {
 }
 
 interface ChatStatus {
-  status: string;
+  status: DialogStatusType;
   lastUpdate: Date;
   content: string;
   hasActivity: boolean;
@@ -61,7 +65,7 @@ export class ChatMonitorTreeProvider
   constructor(private context: vscode.ExtensionContext) {
     this.chatAnalyzer = new CopilotChatAnalyzer();
     this.chatStatus = {
-      status: "unknown",
+      status: DialogStatus.PENDING,
       lastUpdate: new Date(),
       content: "",
       hasActivity: false,
@@ -98,29 +102,33 @@ export class ChatMonitorTreeProvider
         return "❌";
       case "in_progress":
         return "🔄";
-      case "unknown":
+      case "failed":
+        return "⚠️";
+      case "pending":
       default:
-        return "❓";
+        return "⏳";
     }
   }
 
   private getChatStatusIcon(status: string): vscode.ThemeIcon {
-    const colorMap = {
+    const colorMap: Record<string, string> = {
       completed: "charts.green",
       canceled: "charts.red",
       in_progress: "charts.blue",
-      unknown: "charts.gray",
+      failed: "charts.orange",
+      pending: "charts.yellow",
     };
 
-    const iconMap = {
+    const iconMap: Record<string, string> = {
       completed: "check",
       canceled: "x",
       in_progress: "sync",
-      unknown: "question",
+      failed: "warning",
+      pending: "clock",
     };
 
-    const color = colorMap[status as keyof typeof colorMap];
-    const iconName = iconMap[status as keyof typeof iconMap];
+    const color = colorMap[status] || colorMap.pending;
+    const iconName = iconMap[status] || iconMap.pending;
 
     return new vscode.ThemeIcon(
       iconName,
@@ -234,8 +242,8 @@ export class ChatMonitorTreeProvider
         );
       } catch (exportError) {
         console.log(`Chat export error: ${exportError}`);
-        // If export fails, try alternative method
-        this.chatStatus.status = "unknown";
+        // If export fails, keep pending status
+        this.chatStatus.status = DialogStatus.PENDING;
         this.chatStatus.hasActivity = false;
         this.refresh();
         return;
@@ -275,8 +283,8 @@ export class ChatMonitorTreeProvider
           console.log(
             `JSON content preview: ${jsonContent.substring(0, 200)}...`
           );
-          // If JSON parse fails, format is incorrect
-          this.chatStatus.status = "unknown";
+          // If JSON parse fails, keep pending status
+          this.chatStatus.status = DialogStatus.PENDING;
           this.chatStatus.requestsCount = 0;
           this.refresh();
           return;
@@ -346,7 +354,7 @@ export class ChatMonitorTreeProvider
         const errorMessage = `Analyzer error: ${analyzerError}`;
         console.log(errorMessage);
         console.log(`Error details:`, analyzerError);
-        this.chatStatus.status = "unknown";
+        this.chatStatus.status = DialogStatus.PENDING;
         this.chatStatus.requestsCount = 0;
         this.notifyError(errorMessage);
       }
@@ -363,8 +371,8 @@ export class ChatMonitorTreeProvider
     } catch (error) {
       const errorMessage = `Chat monitoring error: ${error}`;
       console.log(errorMessage);
-      // On error, mark status as unknown
-      this.chatStatus.status = "unknown";
+      // On error, keep pending status
+      this.chatStatus.status = DialogStatus.PENDING;
       this.chatStatus.hasActivity = false;
       this.notifyError(errorMessage);
       this.refresh();
@@ -382,11 +390,7 @@ export class ChatMonitorTreeProvider
 
   public getCurrentStatus(): ChatMonitorData {
     return {
-      status: this.chatStatus.status as
-        | "completed"
-        | "canceled"
-        | "in_progress"
-        | "unknown",
+      status: this.chatStatus.status,
       requestsCount: this.chatStatus.requestsCount,
       lastUpdate: this.chatStatus.lastUpdate,
       hasActivity: this.chatStatus.hasActivity,

@@ -1,0 +1,115 @@
+{
+  "responderUsername": "GitHub Copilot",
+  "responderAvatarIconUri": {
+    "id": "copilot"
+  },
+  "initialLocation": "panel",
+  "requests": [
+    {
+      "requestId": "request_f8a3f752-fc16-482a-9fcc-486b3945ca6c",
+      "message": {
+        "text": "asdasd",
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 6
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 7
+            },
+            "text": "asdasd",
+            "kind": "text"
+          }
+        ]
+      },
+      "variableData": {
+        "variables": []
+      },
+      "response": [
+        {
+          "kind": "mcpServersStarting",
+          "didStartServerIds": []
+        }
+      ],
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "extensionVersion": "0.37.2026011401",
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.editsAgent",
+        "description": "Edit files in your workspace in agent mode",
+        "when": "config.chat.agent.enabled",
+        "metadata": {
+          "themeIcon": {
+            "id": "tools"
+          },
+          "hasFollowups": false,
+          "supportIssueReporting": false
+        },
+        "name": "agent",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "modes": [
+          "agent"
+        ],
+        "slashCommands": [],
+        "disambiguation": []
+      },
+      "timestamp": 1768384561911,
+      "modelId": "oaicopilot/germes-120b",
+      "responseId": "response_fe2980ac-3689-4798-8345-1fab64a924dd",
+      "result": {
+        "errorDetails": {
+          "code": "failed",
+          "message": "Sorry, your request failed. Please try again.\n\nCopilot Request id: a74e03ff-64cc-4a72-bdea-92e1c9dd007c\n\nReason: OAI Compatible API error: [401] \n{\"error\":{\"message\":\"Authentication Error, LiteLLM Virtual Key expected. Received=asdasd, expected to start with 'sk-'.\",\"type\":\"auth_error\",\"param\":\"None\",\"code\":\"401\"}}\nURL: https://litellm.mimikkai.ru/v1/chat/completions: Error: OAI Compatible API error: [401] \n{\"error\":{\"message\":\"Authentication Error, LiteLLM Virtual Key expected. Received=asdasd, expected to start with 'sk-'.\",\"type\":\"auth_error\",\"param\":\"None\",\"code\":\"401\"}}\nURL: https://litellm.mimikkai.ru/v1/chat/completions\n\tat c:\\Users\\dealenx\\dev\\oss\\oai-compatible-copilot\\out\\provider.js:338:31\n\tat process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n\tat async executeWithRetry (c:\\Users\\dealenx\\dev\\oss\\oai-compatible-copilot\\out\\utils.js:287:20)\n\tat async HuggingFaceChatModelProvider.provideLanguageModelChatResponse (c:\\Users\\dealenx\\dev\\oss\\oai-compatible-copilot\\out\\provider.js:329:34)",
+          "confirmationButtons": [
+            {
+              "data": {
+                "copilotContinueOnError": true
+              },
+              "label": "Try Again"
+            }
+          ],
+          "responseIsIncomplete": true
+        },
+        "timings": {
+          "totalElapsed": 906
+        },
+        "metadata": {
+          "toolCallRounds": [
+            {
+              "response": "",
+              "toolCalls": [],
+              "toolInputRetry": 0,
+              "id": "a6a7f486-57eb-4c3c-aca1-4f0ed306dfef"
+            }
+          ],
+          "modelMessageId": "2e67b3f2-7d0c-4ff6-8b55-ea2779fde78d",
+          "responseId": "38b3ec74-6689-424e-8274-6e4d1f71cc6c",
+          "sessionId": "f0be36b7-b4c8-4a77-b238-7bd8e6fba472",
+          "agentId": "github.copilot.editsAgent"
+        },
+        "details": "germes-120b via mimikkai • 0x"
+      },
+      "followups": [],
+      "modelState": {
+        "value": 3,
+        "completedAt": 1768384562835
+      },
+      "contentReferences": [],
+      "codeCitations": [],
+      "timeSpentWaiting": 0
+    }
+  ]
+}

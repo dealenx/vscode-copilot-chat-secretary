@@ -98,6 +98,60 @@ describe("CopilotChatAnalyzer", () => {
       const chatData = { requests: undefined };
       expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.PENDING);
     });
+
+    test("should return FAILED when last request has errorDetails", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              errorDetails: {
+                code: "failed",
+                message: "Sorry, your request failed.",
+                responseIsIncomplete: true,
+              },
+            },
+            followups: [],
+          },
+        ],
+      };
+      expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.FAILED);
+    });
+
+    test("should prioritize FAILED over COMPLETED when has errorDetails", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              errorDetails: {
+                code: "failed",
+                message: "API error",
+              },
+            },
+            followups: [],
+          },
+        ],
+      };
+      expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.FAILED);
+    });
+
+    test("should prioritize CANCELED over FAILED", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            isCanceled: true,
+            result: {
+              errorDetails: {
+                code: "failed",
+              },
+            },
+          },
+        ],
+      };
+      expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.CANCELED);
+    });
   });
 
   describe("getDialogStatusDetails", () => {
@@ -105,10 +159,11 @@ describe("CopilotChatAnalyzer", () => {
       const details = analyzer.getDialogStatusDetails({});
 
       expect(details.status).toBe(DialogStatus.PENDING);
-      expect(details.statusText).toBe("Диалог еще не начат");
+      expect(details.statusText).toBe("Dialog not started");
       expect(details.hasResult).toBe(false);
       expect(details.hasFollowups).toBe(false);
       expect(details.isCanceled).toBe(false);
+      expect(details.isFailed).toBe(false);
     });
 
     test("should return correct details for completed dialog", () => {
@@ -126,6 +181,30 @@ describe("CopilotChatAnalyzer", () => {
       expect(details.status).toBe(DialogStatus.COMPLETED);
       expect(details.hasResult).toBe(true);
       expect(details.lastRequestId).toBe("req-123");
+    });
+
+    test("should return correct details for failed dialog", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-456",
+            result: {
+              errorDetails: {
+                code: "failed",
+                message: "Sorry, your request failed. Authentication Error.",
+              },
+            },
+            followups: [],
+          },
+        ],
+      };
+      const details = analyzer.getDialogStatusDetails(chatData);
+
+      expect(details.status).toBe(DialogStatus.FAILED);
+      expect(details.statusText).toBe("Dialog failed with error");
+      expect(details.isFailed).toBe(true);
+      expect(details.errorCode).toBe("failed");
+      expect(details.errorMessage).toContain("Authentication Error");
     });
 
     test("should return correct details for canceled dialog", () => {
@@ -178,82 +257,85 @@ describe("CopilotChatAnalyzer", () => {
       // Тестируем количество запросов
       expect(analyzer.getRequestsCount(completedChatData)).toBe(1);
 
-      // Тестируем статус диалога
+      // Test dialog status
       expect(analyzer.getDialogStatus(completedChatData)).toBe(
         DialogStatus.COMPLETED
       );
 
-      // Тестируем детали статуса
+      // Test status details
       const details = analyzer.getDialogStatusDetails(completedChatData);
       expect(details.status).toBe(DialogStatus.COMPLETED);
-      expect(details.statusText).toBe("Диалог завершен успешно");
+      expect(details.statusText).toBe("Dialog completed successfully");
       expect(details.hasResult).toBe(true);
       expect(details.hasFollowups).toBe(true);
       expect(details.isCanceled).toBe(false);
+      expect(details.isFailed).toBe(false);
       expect(details.lastRequestId).toBe(
         "request_962e76d4-743c-490e-9609-c8f65ef52f56"
       );
     });
 
     test("should correctly analyze in-progress chat", () => {
-      // Данные чата в процессе (упрощенная версия из in_progress_chat.json)
+      // In-progress chat data (simplified from in_progress_chat.json)
       const inProgressChatData = {
         requests: [
           {
             requestId: "request_962e76d4-743c-490e-9609-c8f65ef52f56",
-            // Нет поля followups = диалог в процессе
+            // No followups property = dialog in progress
             isCanceled: false,
           },
         ],
       };
 
-      // Тестируем количество запросов
+      // Test request count
       expect(analyzer.getRequestsCount(inProgressChatData)).toBe(1);
 
-      // Тестируем статус диалога
+      // Test dialog status
       expect(analyzer.getDialogStatus(inProgressChatData)).toBe(
         DialogStatus.IN_PROGRESS
       );
 
-      // Тестируем детали статуса
+      // Test status details
       const details = analyzer.getDialogStatusDetails(inProgressChatData);
       expect(details.status).toBe(DialogStatus.IN_PROGRESS);
-      expect(details.statusText).toBe("Диалог в процессе выполнения");
+      expect(details.statusText).toBe("Dialog in progress");
       expect(details.hasResult).toBe(false);
       expect(details.hasFollowups).toBe(false);
       expect(details.isCanceled).toBe(false);
+      expect(details.isFailed).toBe(false);
       expect(details.lastRequestId).toBe(
         "request_962e76d4-743c-490e-9609-c8f65ef52f56"
       );
     });
 
     test("should correctly analyze canceled chat", () => {
-      // Данные отмененного чата
+      // Canceled chat data
       const canceledChatData = {
         requests: [
           {
             requestId: "request_canceled_123",
-            isCanceled: true, // Отмененный запрос
+            isCanceled: true, // Canceled request
             result: null,
           },
         ],
       };
 
-      // Тестируем количество запросов
+      // Test request count
       expect(analyzer.getRequestsCount(canceledChatData)).toBe(1);
 
-      // Тестируем статус диалога
+      // Test dialog status
       expect(analyzer.getDialogStatus(canceledChatData)).toBe(
         DialogStatus.CANCELED
       );
 
-      // Тестируем детали статуса
+      // Test status details
       const details = analyzer.getDialogStatusDetails(canceledChatData);
       expect(details.status).toBe(DialogStatus.CANCELED);
-      expect(details.statusText).toBe("Диалог был отменен");
+      expect(details.statusText).toBe("Dialog was canceled");
       expect(details.hasResult).toBe(false);
       expect(details.hasFollowups).toBe(false);
       expect(details.isCanceled).toBe(true);
+      expect(details.isFailed).toBe(false);
       expect(details.lastRequestId).toBe("request_canceled_123");
     });
   });

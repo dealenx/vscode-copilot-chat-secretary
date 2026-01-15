@@ -1,17 +1,22 @@
 // services/chatMonitorTypes.ts
+import { DialogStatusType } from "copilot-chat-analyzer";
+
 export interface ChatMonitorData {
-  status: "completed" | "canceled" | "in_progress" | "unknown";
+  status: DialogStatusType;
   requestsCount: number;
   lastUpdate: Date;
   hasActivity: boolean;
   lastRequestId?: string;
   statusDetails?: {
-    status: string;
+    status: DialogStatusType;
     statusText: string;
     hasResult: boolean;
     hasFollowups: boolean;
     isCanceled: boolean;
+    isFailed: boolean;
     lastRequestId?: string;
+    errorCode?: string;
+    errorMessage?: string;
   };
 }
 

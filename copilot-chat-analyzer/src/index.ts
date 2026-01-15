@@ -11,7 +11,10 @@ interface DialogStatusDetails {
   hasResult: boolean;
   hasFollowups: boolean;
   isCanceled: boolean;
+  isFailed: boolean;
   lastRequestId?: string;
+  errorCode?: string;
+  errorMessage?: string;
 }
 
 interface McpToolCall {
@@ -57,6 +60,7 @@ export const DialogStatus = {
   COMPLETED: "completed",
   CANCELED: "canceled",
   IN_PROGRESS: "in_progress",
+  FAILED: "failed",
 } as const;
 
 export type DialogStatusType = (typeof DialogStatus)[keyof typeof DialogStatus];
@@ -90,16 +94,24 @@ export class CopilotChatAnalyzer {
       return DialogStatus.PENDING;
     }
 
+    // Check canceled first (user action)
     if (lastRequest.isCanceled === true) {
       return DialogStatus.CANCELED;
     }
 
+    // Check failed (API error) - before completed/in_progress
+    if (lastRequest?.result?.errorDetails) {
+      return DialogStatus.FAILED;
+    }
+
+    // Check completed (has empty followups array)
     if ("followups" in lastRequest && Array.isArray(lastRequest.followups)) {
       if (lastRequest.followups.length === 0) {
         return DialogStatus.COMPLETED;
       }
     }
 
+    // No followups property means still in progress
     if (!("followups" in lastRequest)) {
       return DialogStatus.IN_PROGRESS;
     }
@@ -113,20 +125,23 @@ export class CopilotChatAnalyzer {
     if (!this.hasRequests(chatData)) {
       return {
         status: DialogStatus.PENDING,
-        statusText: "Диалог еще не начат",
+        statusText: "Dialog not started",
         hasResult: false,
         hasFollowups: false,
         isCanceled: false,
+        isFailed: false,
       };
     }
 
     const lastRequest = this.getLastRequest(chatData);
+    const errorDetails = lastRequest?.result?.errorDetails;
 
-    const statusTexts = {
-      [DialogStatus.PENDING]: "Диалог еще не начат",
-      [DialogStatus.COMPLETED]: "Диалог завершен успешно",
-      [DialogStatus.CANCELED]: "Диалог был отменен",
-      [DialogStatus.IN_PROGRESS]: "Диалог в процессе выполнения",
+    const statusTexts: Record<DialogStatusType, string> = {
+      [DialogStatus.PENDING]: "Dialog not started",
+      [DialogStatus.COMPLETED]: "Dialog completed successfully",
+      [DialogStatus.CANCELED]: "Dialog was canceled",
+      [DialogStatus.IN_PROGRESS]: "Dialog in progress",
+      [DialogStatus.FAILED]: "Dialog failed with error",
     };
 
     return {
@@ -136,7 +151,10 @@ export class CopilotChatAnalyzer {
         lastRequest && "result" in lastRequest && lastRequest.result !== null,
       hasFollowups: lastRequest && "followups" in lastRequest,
       isCanceled: lastRequest && lastRequest.isCanceled === true,
+      isFailed: !!errorDetails,
       lastRequestId: lastRequest?.requestId,
+      errorCode: errorDetails?.code,
+      errorMessage: errorDetails?.message,
     };
   }
 
@@ -348,4 +366,5 @@ export type {
   McpToolMonitoring,
   McpMonitoringSummary,
   UserRequest,
+  DialogStatusDetails,
 };
