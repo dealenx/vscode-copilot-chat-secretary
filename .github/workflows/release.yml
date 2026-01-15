@@ -66,7 +66,7 @@ jobs:
         run: pnpm run build
 
       - name: Package extension
-        run: vsce package
+        run: pnpm run package
 
       - name: Upload VSIX as artifact
         uses: actions/upload-artifact@v4
