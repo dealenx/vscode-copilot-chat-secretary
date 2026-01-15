@@ -2,11 +2,13 @@
 import * as vscode from "vscode";
 import { ChatMonitorTreeProvider } from "./providers/chatMonitorTreeProvider";
 import { RequestsTreeProvider } from "./providers/requestsTreeProvider";
+import { ProcessedDialogsTreeProvider } from "./providers/processedDialogsTreeProvider";
 import { logger, LogCategory } from "./utils/logger";
 import { COMMANDS } from "./utils/constants";
 
 let chatMonitorTreeProvider: ChatMonitorTreeProvider;
 let requestsTreeProvider: RequestsTreeProvider;
+let processedDialogsTreeProvider: ProcessedDialogsTreeProvider;
 
 /**
  * Get the ChatMonitorTreeProvider instance for external access
@@ -77,6 +79,27 @@ export async function activate(context: vscode.ExtensionContext) {
   // Connect chat monitor to requests provider
   chatMonitorTreeProvider.setRequestsProvider(requestsTreeProvider);
 
+  // Create Processed Dialogs Tree View Provider
+  processedDialogsTreeProvider = new ProcessedDialogsTreeProvider();
+  processedDialogsTreeProvider.setSessionsService(
+    chatMonitorTreeProvider.getSessionsService()
+  );
+
+  // Connect session recording callback to refresh dialogs list
+  chatMonitorTreeProvider.setOnSessionRecorded(() => {
+    processedDialogsTreeProvider.refresh();
+  });
+
+  const processedDialogsTreeView = vscode.window.createTreeView(
+    "copilotChatSecretaryProcessedDialogsView",
+    {
+      treeDataProvider: processedDialogsTreeProvider,
+      showCollapseAll: false,
+    }
+  );
+
+  processedDialogsTreeView.title = "Dialogs";
+
   // Register refresh command
   const refreshCommand = vscode.commands.registerCommand(
     COMMANDS.REFRESH_STATUS,
@@ -96,12 +119,32 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Register clear history command
+  const clearHistoryCommand = vscode.commands.registerCommand(
+    "copilotChatSecretary.clearHistory",
+    async () => {
+      processedDialogsTreeProvider.clearHistory();
+      vscode.window.showInformationMessage("Dialog history cleared");
+    }
+  );
+
+  // Register refresh dialogs command
+  const refreshDialogsCommand = vscode.commands.registerCommand(
+    "copilotChatSecretary.refreshDialogs",
+    async () => {
+      processedDialogsTreeProvider.refresh();
+    }
+  );
+
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
     requestsTreeView,
+    processedDialogsTreeView,
     refreshCommand,
     showLogsCommand,
+    clearHistoryCommand,
+    refreshDialogsCommand,
     {
       dispose: () => {
         chatMonitorTreeProvider.dispose();

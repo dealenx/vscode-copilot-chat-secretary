@@ -339,4 +339,111 @@ describe("CopilotChatAnalyzer", () => {
       expect(details.lastRequestId).toBe("request_canceled_123");
     });
   });
+
+  describe("getSessionId", () => {
+    test("should return null for empty chat data", () => {
+      expect(analyzer.getSessionId({})).toBeNull();
+    });
+
+    test("should return null for chat with no requests", () => {
+      expect(analyzer.getSessionId({ requests: [] })).toBeNull();
+    });
+
+    test("should return null for chat with no sessionId in metadata", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: { metadata: {} },
+          },
+        ],
+      };
+      expect(analyzer.getSessionId(chatData)).toBeNull();
+    });
+
+    test("should extract sessionId from first request with metadata", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              metadata: {
+                sessionId: "ff72bca6-0dec-4953-b130-a103a97e5380",
+              },
+            },
+          },
+        ],
+      };
+      expect(analyzer.getSessionId(chatData)).toBe(
+        "ff72bca6-0dec-4953-b130-a103a97e5380"
+      );
+    });
+
+    test("should find sessionId even if first request has no metadata", () => {
+      const chatData = {
+        requests: [
+          { requestId: "1", result: null },
+          {
+            requestId: "2",
+            result: {
+              metadata: {
+                sessionId: "abc123-session-id",
+              },
+            },
+          },
+        ],
+      };
+      expect(analyzer.getSessionId(chatData)).toBe("abc123-session-id");
+    });
+  });
+
+  describe("getSessionInfo", () => {
+    test("should return null for empty chat data", () => {
+      expect(analyzer.getSessionInfo({})).toBeNull();
+    });
+
+    test("should return session with only sessionId when no other metadata", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              metadata: {
+                sessionId: "session-123",
+              },
+            },
+          },
+        ],
+      };
+      const session = analyzer.getSessionInfo(chatData);
+      expect(session).toEqual({
+        sessionId: "session-123",
+        agentId: undefined,
+        modelId: undefined,
+      });
+    });
+
+    test("should return full session info with agentId and modelId", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              metadata: {
+                sessionId: "ff72bca6-0dec-4953-b130-a103a97e5380",
+                agentId: "github.copilot.editsAgent",
+                modelId: "copilot/gemini-2.5-pro",
+              },
+            },
+          },
+        ],
+      };
+      const session = analyzer.getSessionInfo(chatData);
+      expect(session).toEqual({
+        sessionId: "ff72bca6-0dec-4953-b130-a103a97e5380",
+        agentId: "github.copilot.editsAgent",
+        modelId: "copilot/gemini-2.5-pro",
+      });
+    });
+  });
 });

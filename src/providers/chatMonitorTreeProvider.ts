@@ -10,6 +10,8 @@ import {
   ChatMonitorSubscriber,
   ChatMonitorService,
 } from "../services/chatMonitorTypes";
+import { DialogSessionsServiceImpl } from "../services/dialogSessionsService";
+import { DialogSessionRecord } from "../services/dialogSessionsTypes";
 
 export class ChatMonitorTreeItem extends vscode.TreeItem {
   constructor(
@@ -41,6 +43,7 @@ interface ChatStatus {
   lastRequestId?: string;
   statusDetails?: any;
   requests: UserRequest[];
+  sessionId?: string;
 }
 
 import { RequestsTreeProvider } from "./requestsTreeProvider";
@@ -61,9 +64,12 @@ export class ChatMonitorTreeProvider
   private chatAnalyzer: CopilotChatAnalyzer;
   private subscribers: Set<ChatMonitorSubscriber> = new Set();
   private requestsProvider: RequestsTreeProvider | undefined;
+  private sessionsService: DialogSessionsServiceImpl;
+  private onSessionRecorded: (() => void) | undefined;
 
   constructor(private context: vscode.ExtensionContext) {
     this.chatAnalyzer = new CopilotChatAnalyzer();
+    this.sessionsService = new DialogSessionsServiceImpl(context);
     this.chatStatus = {
       status: DialogStatus.PENDING,
       lastUpdate: new Date(),
@@ -79,6 +85,18 @@ export class ChatMonitorTreeProvider
 
   setRequestsProvider(provider: RequestsTreeProvider): void {
     this.requestsProvider = provider;
+  }
+
+  setOnSessionRecorded(callback: () => void): void {
+    this.onSessionRecorded = callback;
+  }
+
+  getSessionsService(): DialogSessionsServiceImpl {
+    return this.sessionsService;
+  }
+
+  getCurrentSessionId(): string | null {
+    return this.chatStatus.sessionId || null;
   }
 
   refresh(): void {
@@ -189,6 +207,21 @@ export class ChatMonitorTreeProvider
         `Total user requests in chat: ${this.chatStatus.requestsCount}`
       )
     );
+
+    // Session ID (if available)
+    if (this.chatStatus.sessionId) {
+      const shortSessionId = this.chatStatus.sessionId.substring(0, 8) + "...";
+      items.push(
+        new ChatMonitorTreeItem(
+          `🆔 Session: ${shortSessionId}`,
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          "sessionId",
+          new vscode.ThemeIcon("key"),
+          `Full Session ID: ${this.chatStatus.sessionId}`
+        )
+      );
+    }
 
     // Chat activity
     const activityLabel = this.chatStatus.hasActivity
@@ -323,6 +356,37 @@ export class ChatMonitorTreeProvider
         // Parse and store user requests using library method
         this.chatStatus.requests = this.chatAnalyzer.getUserRequests(chatData);
         console.log(`Parsed user requests: ${this.chatStatus.requests.length}`);
+
+        // Extract and record session information
+        const sessionInfo = this.chatAnalyzer.getSessionInfo(chatData);
+        if (sessionInfo?.sessionId) {
+          this.chatStatus.sessionId = sessionInfo.sessionId;
+
+          // Get first user message for preview
+          const firstRequestPreview =
+            this.chatStatus.requests.length > 0
+              ? this.chatStatus.requests[0].message.substring(0, 80)
+              : "";
+
+          // Record session to history
+          const sessionRecord: DialogSessionRecord = {
+            sessionId: sessionInfo.sessionId,
+            firstSeen: Date.now(),
+            lastSeen: Date.now(),
+            requestsCount: requestsCount,
+            status: status,
+            firstRequestPreview: firstRequestPreview,
+            agentId: sessionInfo.agentId,
+            modelId: sessionInfo.modelId,
+          };
+          this.sessionsService.recordSession(sessionRecord);
+          console.log(`Session recorded: ${sessionInfo.sessionId}`);
+
+          // Notify about session recorded to refresh dialogs list
+          if (this.onSessionRecorded) {
+            this.onSessionRecorded();
+          }
+        }
 
         // Update requests provider - always update to ensure sync
         if (this.requestsProvider) {

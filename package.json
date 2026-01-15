@@ -2,7 +2,7 @@
   "name": "copilot-chat-secretary",
   "displayName": "Copilot Chat Secretary",
   "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "copilot-chat-secretary",
   "engines": {
     "vscode": "^1.104.0"
@@ -45,6 +45,16 @@
         "command": "copilotChatSecretary.showLogs",
         "title": "Show Logs",
         "icon": "$(output)"
+      },
+      {
+        "command": "copilotChatSecretary.clearHistory",
+        "title": "Clear Dialog History",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "copilotChatSecretary.refreshDialogs",
+        "title": "Refresh Dialogs",
+        "icon": "$(refresh)"
       }
     ],
     "views": {
@@ -58,6 +68,11 @@
           "id": "copilotChatSecretaryRequestsView",
           "name": "User Requests",
           "icon": "$(list-ordered)"
+        },
+        {
+          "id": "copilotChatSecretaryProcessedDialogsView",
+          "name": "Dialogs",
+          "icon": "$(history)"
         }
       ]
     },
@@ -93,6 +108,16 @@
           "command": "copilotChatSecretary.refreshStatus",
           "when": "view == copilotChatSecretaryView",
           "group": "navigation@1"
+        },
+        {
+          "command": "copilotChatSecretary.refreshDialogs",
+          "when": "view == copilotChatSecretaryProcessedDialogsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "copilotChatSecretary.clearHistory",
+          "when": "view == copilotChatSecretaryProcessedDialogsView",
+          "group": "navigation@2"
         }
       ]
     }

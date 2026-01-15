@@ -55,6 +55,12 @@ interface UserRequest {
   index: number;
 }
 
+interface DialogSession {
+  sessionId: string;
+  agentId?: string;
+  modelId?: string;
+}
+
 export const DialogStatus = {
   PENDING: "pending",
   COMPLETED: "completed",
@@ -71,6 +77,50 @@ export class CopilotChatAnalyzer {
       return 0;
     }
     return chatData.requests.length;
+  }
+
+  /**
+   * Extract sessionId from chat data.
+   * The sessionId is stored in result.metadata.sessionId of any request.
+   * All requests in a dialog share the same sessionId.
+   */
+  getSessionId(chatData: CopilotChatData): string | null {
+    if (!chatData?.requests?.length) {
+      return null;
+    }
+
+    for (const request of chatData.requests) {
+      const sessionId = request?.result?.metadata?.sessionId;
+      if (sessionId && typeof sessionId === "string") {
+        return sessionId;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get full session information including agentId and modelId.
+   */
+  getSessionInfo(chatData: CopilotChatData): DialogSession | null {
+    const sessionId = this.getSessionId(chatData);
+    if (!sessionId) {
+      return null;
+    }
+
+    // Find request with metadata to extract additional info
+    for (const request of chatData.requests!) {
+      const metadata = request?.result?.metadata;
+      if (metadata?.sessionId === sessionId) {
+        return {
+          sessionId,
+          agentId: metadata?.agentId,
+          modelId: metadata?.modelId,
+        };
+      }
+    }
+
+    return { sessionId };
   }
 
   private hasRequests(chatData: CopilotChatData): boolean {
@@ -367,4 +417,5 @@ export type {
   McpMonitoringSummary,
   UserRequest,
   DialogStatusDetails,
+  DialogSession,
 };
