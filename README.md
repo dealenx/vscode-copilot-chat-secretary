@@ -45,6 +45,15 @@ After installation, you'll see a new "Copilot Chat Secretary" icon in the Activi
 
 This extension provides a Commands API for other VS Code extensions to access chat monitoring data.
 
+### API Commands
+
+| Command                                     | Description           |
+| ------------------------------------------- | --------------------- |
+| `copilotChatSecretary.api.getStatus`        | Текущий статус чата   |
+| `copilotChatSecretary.api.getCurrentDialog` | Активный диалог       |
+| `copilotChatSecretary.api.getDialogHistory` | История с фильтрацией |
+| `copilotChatSecretary.api.getSession`       | Сессия по ID          |
+
 ### Available Commands
 
 ```typescript
@@ -52,7 +61,7 @@ This extension provides a Commands API for other VS Code extensions to access ch
 const status = await vscode.commands.executeCommand<ChatStatusResponse>(
   "copilotChatSecretary.api.getStatus"
 );
-// Returns: { status, sessionId, requestsCount, lastUpdate, isActive }
+// Returns: { status, sessionId, requestsCount, lastUpdate }
 
 // Get current dialog session
 const dialog =
@@ -85,7 +94,6 @@ interface ChatStatusResponse {
   sessionId: string | null;
   requestsCount: number;
   lastUpdate: number; // Unix timestamp ms
-  isActive: boolean;
 }
 
 interface DialogSessionResponse {

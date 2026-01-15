@@ -15,8 +15,6 @@ export interface ChatStatusResponse {
   requestsCount: number;
   /** Unix timestamp (ms) of last status update */
   lastUpdate: number;
-  /** Whether chat has activity */
-  isActive: boolean;
 }
 
 /**

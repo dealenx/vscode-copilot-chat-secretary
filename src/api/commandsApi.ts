@@ -53,7 +53,6 @@ export function registerApiCommands(
           sessionId: chatMonitorProvider.getCurrentSessionId(),
           requestsCount: chatMonitorProvider.getRequestsCount(),
           lastUpdate: Date.now(),
-          isActive: chatMonitorProvider.getRequestsCount() > 0,
         };
       }
     )
