@@ -2,7 +2,7 @@
   "name": "copilot-chat-secretary",
   "displayName": "Copilot Chat Secretary",
   "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
-  "version": "0.1.0",
+  "version": "0.2.0-0",
   "publisher": "copilot-chat-secretary",
   "engines": {
     "vscode": "^1.104.0"
@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/user/vscode-copilot-chat-secretary"
+    "url": "https://github.com/dealenx/vscode-copilot-chat-secretary"
   },
   "scripts": {
     "vscode:prepublish": "pnpm run build",
@@ -64,6 +64,11 @@
       {
         "command": "copilotChatSecretary.copyRequestMessage",
         "title": "Copy Message",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "copilotChatSecretary.copyAIResponse",
+        "title": "Copy AI Response",
         "icon": "$(copy)"
       }
     ],
@@ -138,12 +143,22 @@
         },
         {
           "command": "copilotChatSecretary.copyRequestMessage",
-          "when": "view == copilotChatSecretaryRequestsView && viewItem == userRequest",
+          "when": "view == copilotChatSecretaryRequestsView && viewItem == conversationTurn",
           "group": "inline"
         },
         {
           "command": "copilotChatSecretary.copyRequestMessage",
           "when": "view == copilotChatSecretaryProcessedDialogsView && viewItem == dialogRequestItem",
+          "group": "inline"
+        },
+        {
+          "command": "copilotChatSecretary.copyAIResponse",
+          "when": "view == copilotChatSecretaryRequestsView && viewItem == aiResponse",
+          "group": "inline"
+        },
+        {
+          "command": "copilotChatSecretary.copyAIResponse",
+          "when": "view == copilotChatSecretaryProcessedDialogsView && viewItem == responseItem",
           "group": "inline"
         }
       ]

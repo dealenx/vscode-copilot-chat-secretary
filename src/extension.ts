@@ -189,9 +189,14 @@ export async function activate(context: vscode.ExtensionContext) {
   // Register copy request message command
   const copyRequestMessageCommand = vscode.commands.registerCommand(
     "copilotChatSecretary.copyRequestMessage",
-    async (item: { tooltip?: string; request?: { message?: string } }) => {
-      // Try to get message from tooltip (for dialog request items) or request object (for user request items)
-      const message = item?.tooltip || item?.request?.message;
+    async (item: {
+      tooltip?: string;
+      request?: { message?: string };
+      turn?: { request?: { message?: string } };
+    }) => {
+      // Try to get message from tooltip (for dialog request items), turn.request.message (for conversation turn items), or request object
+      const message =
+        item?.tooltip || item?.turn?.request?.message || item?.request?.message;
 
       if (!message) {
         vscode.window.showWarningMessage("No message available to copy");
@@ -204,6 +209,31 @@ export async function activate(context: vscode.ExtensionContext) {
       } catch (error) {
         vscode.window.showErrorMessage(
           `Failed to copy message: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    }
+  );
+
+  // Register copy AI response command
+  const copyAIResponseCommand = vscode.commands.registerCommand(
+    "copilotChatSecretary.copyAIResponse",
+    async (item: { tooltip?: string; response?: { message?: string } }) => {
+      // Get response message from tooltip (full text) or response object
+      const message = item?.tooltip || item?.response?.message;
+
+      if (!message) {
+        vscode.window.showWarningMessage("No AI response available to copy");
+        return;
+      }
+
+      try {
+        await vscode.env.clipboard.writeText(message);
+        vscode.window.showInformationMessage("AI response copied to clipboard");
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to copy AI response: ${
             error instanceof Error ? error.message : "Unknown error"
           }`
         );
@@ -247,6 +277,7 @@ export async function activate(context: vscode.ExtensionContext) {
     refreshDialogsCommand,
     copyChatJsonCommand,
     copyRequestMessageCommand,
+    copyAIResponseCommand,
     {
       dispose: () => {
         clearInterval(autoRefreshInterval);
