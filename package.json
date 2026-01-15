@@ -55,6 +55,16 @@
         "command": "copilotChatSecretary.refreshDialogs",
         "title": "Refresh Dialogs",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "copilotChatSecretary.copyChatJson",
+        "title": "Copy Chat JSON",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "copilotChatSecretary.copyRequestMessage",
+        "title": "Copy Message",
+        "icon": "$(copy)"
       }
     ],
     "views": {
@@ -118,6 +128,23 @@
           "command": "copilotChatSecretary.clearHistory",
           "when": "view == copilotChatSecretaryProcessedDialogsView",
           "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "copilotChatSecretary.copyChatJson",
+          "when": "view == copilotChatSecretaryProcessedDialogsView && viewItem == processedDialog",
+          "group": "inline"
+        },
+        {
+          "command": "copilotChatSecretary.copyRequestMessage",
+          "when": "view == copilotChatSecretaryRequestsView && viewItem == userRequest",
+          "group": "inline"
+        },
+        {
+          "command": "copilotChatSecretary.copyRequestMessage",
+          "when": "view == copilotChatSecretaryProcessedDialogsView && viewItem == dialogRequestItem",
+          "group": "inline"
         }
       ]
     }

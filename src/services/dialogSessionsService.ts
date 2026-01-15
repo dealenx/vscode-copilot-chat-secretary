@@ -42,20 +42,39 @@ export class DialogSessionsServiceImpl implements DialogSessionsService {
    * Save sessions to globalState
    */
   private async saveToStorage(): Promise<void> {
-    // Sort by lastSeen descending and limit to MAX_HISTORY_SIZE
-    const records = Array.from(this.sessions.values())
-      .sort((a, b) => b.lastSeen - a.lastSeen)
-      .slice(0, MAX_HISTORY_SIZE);
+    // Sort by lastSeen descending
+    const allRecords = Array.from(this.sessions.values()).sort(
+      (a, b) => b.lastSeen - a.lastSeen
+    );
+
+    // Keep only MAX_HISTORY_SIZE records
+    const recordsToKeep = allRecords.slice(0, MAX_HISTORY_SIZE);
+    const recordsToRemove = allRecords.slice(MAX_HISTORY_SIZE);
+
+    // Clean up JSON files for removed sessions
+    for (const record of recordsToRemove) {
+      if (record.chatJsonPath) {
+        try {
+          const fileUri = vscode.Uri.file(record.chatJsonPath);
+          await vscode.workspace.fs.delete(fileUri);
+          console.log(
+            `[DialogSessionsService] Cleaned up old JSON: ${record.chatJsonPath}`
+          );
+        } catch (error) {
+          // File may not exist, which is fine
+        }
+      }
+    }
 
     // Update sessions map to reflect pruning
     this.sessions.clear();
-    for (const record of records) {
+    for (const record of recordsToKeep) {
       this.sessions.set(record.sessionId, record);
     }
 
-    await this.context.globalState.update(STORAGE_KEY, records);
+    await this.context.globalState.update(STORAGE_KEY, recordsToKeep);
     console.log(
-      `[DialogSessionsService] Saved ${records.length} sessions to storage`
+      `[DialogSessionsService] Saved ${recordsToKeep.length} sessions to storage`
     );
   }
 
@@ -87,6 +106,8 @@ export class DialogSessionsServiceImpl implements DialogSessionsService {
         firstSeen: existing.firstSeen,
         firstRequestPreview:
           existing.firstRequestPreview || record.firstRequestPreview,
+        // Update chatJsonPath if new one provided
+        chatJsonPath: record.chatJsonPath || existing.chatJsonPath,
       });
     } else {
       // Add new record

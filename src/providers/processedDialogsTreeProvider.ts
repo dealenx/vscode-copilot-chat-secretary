@@ -1,6 +1,10 @@
 // providers/processedDialogsTreeProvider.ts
 import * as vscode from "vscode";
-import { DialogStatus, DialogStatusType } from "copilot-chat-analyzer";
+import CopilotChatAnalyzer, {
+  DialogStatus,
+  DialogStatusType,
+  type UserRequest,
+} from "copilot-chat-analyzer";
 import { DialogSessionRecord } from "../services/dialogSessionsTypes";
 import { DialogSessionsServiceImpl } from "../services/dialogSessionsService";
 
@@ -37,14 +41,19 @@ export class ProcessedDialogsTreeProvider
   > = this._onDidChangeTreeData.event;
 
   private sessionsService: DialogSessionsServiceImpl | undefined;
+  private chatAnalyzer: CopilotChatAnalyzer;
+  private requestsCache: Map<string, UserRequest[]> = new Map();
 
-  constructor() {}
+  constructor() {
+    this.chatAnalyzer = new CopilotChatAnalyzer();
+  }
 
   setSessionsService(service: DialogSessionsServiceImpl): void {
     this.sessionsService = service;
   }
 
   refresh(): void {
+    this.requestsCache.clear();
     this._onDidChangeTreeData.fire();
   }
 
@@ -55,8 +64,9 @@ export class ProcessedDialogsTreeProvider
   async getChildren(
     element?: ProcessedDialogItem
   ): Promise<ProcessedDialogItem[]> {
-    if (element) {
-      return [];
+    // If element is a dialog item, return all user requests as children
+    if (element && element.record) {
+      return this.getRequestsForDialog(element.record);
     }
 
     if (!this.sessionsService) {
@@ -90,6 +100,94 @@ export class ProcessedDialogsTreeProvider
     return sessions.map((session) => this.createSessionItem(session));
   }
 
+  private async getRequestsForDialog(
+    record: DialogSessionRecord
+  ): Promise<ProcessedDialogItem[]> {
+    const sessionId = record.sessionId;
+
+    // Check cache first
+    if (this.requestsCache.has(sessionId)) {
+      const cachedRequests = this.requestsCache.get(sessionId)!;
+      return this.createRequestItems(cachedRequests, sessionId);
+    }
+
+    // Load from file if chatJsonPath exists
+    if (!record.chatJsonPath) {
+      return [
+        new ProcessedDialogItem(
+          "No chat data available",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "noData",
+          new vscode.ThemeIcon("warning"),
+          "Chat JSON file not found"
+        ),
+      ];
+    }
+
+    try {
+      const fileUri = vscode.Uri.file(record.chatJsonPath);
+      const fileContent = await vscode.workspace.fs.readFile(fileUri);
+      const jsonContent = Buffer.from(fileContent).toString("utf8");
+      const chatData = JSON.parse(jsonContent);
+
+      const requests = this.chatAnalyzer.getUserRequests(chatData);
+      this.requestsCache.set(sessionId, requests);
+
+      return this.createRequestItems(requests, sessionId);
+    } catch (error) {
+      console.error(`Failed to load requests for session ${sessionId}:`, error);
+      return [
+        new ProcessedDialogItem(
+          "Unable to load requests",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "error",
+          new vscode.ThemeIcon("error"),
+          error instanceof Error ? error.message : "Unknown error"
+        ),
+      ];
+    }
+  }
+
+  private createRequestItems(
+    requests: UserRequest[],
+    sessionId: string
+  ): ProcessedDialogItem[] {
+    if (requests.length === 0) {
+      return [
+        new ProcessedDialogItem(
+          "No user requests",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "empty",
+          new vscode.ThemeIcon("info")
+        ),
+      ];
+    }
+
+    return requests.map((request, index) => {
+      const truncatedMessage =
+        request.message.length > 50
+          ? request.message.substring(0, 50) + "..."
+          : request.message;
+
+      return new ProcessedDialogItem(
+        `#${index + 1}: "${truncatedMessage}"`,
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "dialogRequestItem",
+        new vscode.ThemeIcon("comment"),
+        request.message, // Full message in tooltip
+        `${sessionId}-request-${index}`
+      );
+    });
+  }
+
   private createSessionItem(session: DialogSessionRecord): ProcessedDialogItem {
     const shortId = session.sessionId.substring(0, 8) + "...";
     const preview = session.firstRequestPreview
@@ -118,7 +216,9 @@ export class ProcessedDialogsTreeProvider
 
     return new ProcessedDialogItem(
       label,
-      vscode.TreeItemCollapsibleState.None,
+      session.firstRequestPreview
+        ? vscode.TreeItemCollapsibleState.Collapsed
+        : vscode.TreeItemCollapsibleState.None,
       session,
       undefined,
       "processedDialog",

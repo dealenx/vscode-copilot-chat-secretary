@@ -50,6 +50,19 @@ export async function activate(context: vscode.ExtensionContext) {
 
   console.log(`Copilot Chat Secretary v${extensionVersion} activated`);
 
+  // Create chat-exports directory for storing dialog JSON files
+  const chatExportsUri = vscode.Uri.joinPath(
+    context.globalStorageUri,
+    "chat-exports"
+  );
+  try {
+    await vscode.workspace.fs.createDirectory(chatExportsUri);
+    console.log(`Chat exports directory ready: ${chatExportsUri.fsPath}`);
+  } catch (error) {
+    // Directory may already exist, which is fine
+    console.log(`Chat exports directory exists or created`);
+  }
+
   // Create Chat Monitor Tree View Provider
   chatMonitorTreeProvider = new ChatMonitorTreeProvider(context);
 
@@ -100,6 +113,14 @@ export async function activate(context: vscode.ExtensionContext) {
 
   processedDialogsTreeView.title = "Dialogs";
 
+  // State tracking for smart refresh (to avoid disrupting hover tooltips)
+  let lastKnownState = {
+    sessionId: "",
+    requestsCount: 0,
+    status: "",
+    sessionsCount: 0,
+  };
+
   // Register refresh command
   const refreshCommand = vscode.commands.registerCommand(
     COMMANDS.REFRESH_STATUS,
@@ -136,6 +157,85 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Register copy chat JSON command
+  const copyChatJsonCommand = vscode.commands.registerCommand(
+    "copilotChatSecretary.copyChatJson",
+    async (item: {
+      record?: { chatJsonPath?: string; sessionId?: string };
+    }) => {
+      if (!item?.record?.chatJsonPath) {
+        vscode.window.showWarningMessage(
+          "No chat JSON available for this dialog"
+        );
+        return;
+      }
+
+      try {
+        const fileUri = vscode.Uri.file(item.record.chatJsonPath);
+        const fileContent = await vscode.workspace.fs.readFile(fileUri);
+        const jsonContent = Buffer.from(fileContent).toString("utf8");
+        await vscode.env.clipboard.writeText(jsonContent);
+        vscode.window.showInformationMessage("Chat JSON copied to clipboard");
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to copy chat JSON: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    }
+  );
+
+  // Register copy request message command
+  const copyRequestMessageCommand = vscode.commands.registerCommand(
+    "copilotChatSecretary.copyRequestMessage",
+    async (item: { tooltip?: string; request?: { message?: string } }) => {
+      // Try to get message from tooltip (for dialog request items) or request object (for user request items)
+      const message = item?.tooltip || item?.request?.message;
+
+      if (!message) {
+        vscode.window.showWarningMessage("No message available to copy");
+        return;
+      }
+
+      try {
+        await vscode.env.clipboard.writeText(message);
+        vscode.window.showInformationMessage("Message copied to clipboard");
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to copy message: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+      }
+    }
+  );
+
+  // Auto-refresh Chat Monitor every 5 seconds (smart refresh - only updates UI when data changes)
+  const autoRefreshInterval = setInterval(async () => {
+    await chatMonitorTreeProvider.refreshStatus();
+
+    // Get current state
+    const currentSessionId =
+      chatMonitorTreeProvider.getCurrentSessionId() || "";
+    const currentStatus = chatMonitorTreeProvider.getStatusString();
+    const currentRequestsCount = chatMonitorTreeProvider.getRequestsCount();
+    const currentSessionsCount = chatMonitorTreeProvider
+      .getSessionsService()
+      .getSessionHistory().length;
+
+    // Only refresh Dialogs view if sessions actually changed
+    if (currentSessionsCount !== lastKnownState.sessionsCount) {
+      processedDialogsTreeProvider.refresh();
+      lastKnownState.sessionsCount = currentSessionsCount;
+    }
+
+    // Update tracked state (for future use if needed)
+    lastKnownState.sessionId = currentSessionId;
+    lastKnownState.status = currentStatus;
+    lastKnownState.requestsCount = currentRequestsCount;
+  }, 5000);
+
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
@@ -145,8 +245,11 @@ export async function activate(context: vscode.ExtensionContext) {
     showLogsCommand,
     clearHistoryCommand,
     refreshDialogsCommand,
+    copyChatJsonCommand,
+    copyRequestMessageCommand,
     {
       dispose: () => {
+        clearInterval(autoRefreshInterval);
         chatMonitorTreeProvider.dispose();
       },
     }

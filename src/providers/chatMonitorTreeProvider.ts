@@ -99,6 +99,14 @@ export class ChatMonitorTreeProvider
     return this.chatStatus.sessionId || null;
   }
 
+  getStatusString(): string {
+    return this.chatStatus.status;
+  }
+
+  getRequestsCount(): number {
+    return this.chatStatus.requestsCount;
+  }
+
   refresh(): void {
     this._onDidChangeTreeData.fire();
   }
@@ -368,6 +376,24 @@ export class ChatMonitorTreeProvider
               ? this.chatStatus.requests[0].message.substring(0, 80)
               : "";
 
+          // Save chat JSON to file for later access
+          let chatJsonPath: string | undefined;
+          try {
+            const chatExportsUri = vscode.Uri.joinPath(
+              this.context.globalStorageUri,
+              "chat-exports",
+              `${sessionInfo.sessionId}.json`
+            );
+            await vscode.workspace.fs.writeFile(
+              chatExportsUri,
+              Buffer.from(jsonContent, "utf8")
+            );
+            chatJsonPath = chatExportsUri.fsPath;
+            console.log(`Chat JSON saved to: ${chatJsonPath}`);
+          } catch (saveError) {
+            console.log(`Failed to save chat JSON: ${saveError}`);
+          }
+
           // Record session to history
           const sessionRecord: DialogSessionRecord = {
             sessionId: sessionInfo.sessionId,
@@ -378,6 +404,7 @@ export class ChatMonitorTreeProvider
             firstRequestPreview: firstRequestPreview,
             agentId: sessionInfo.agentId,
             modelId: sessionInfo.modelId,
+            chatJsonPath: chatJsonPath,
           };
           this.sessionsService.recordSession(sessionRecord);
           console.log(`Session recorded: ${sessionInfo.sessionId}`);

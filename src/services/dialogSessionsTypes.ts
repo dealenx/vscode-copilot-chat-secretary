@@ -21,6 +21,8 @@ export interface DialogSessionRecord {
   agentId?: string;
   /** Model ID if available (e.g., "copilot/gemini-2.5-pro") */
   modelId?: string;
+  /** Path to stored chat JSON file for debugging */
+  chatJsonPath?: string;
 }
 
 /**
