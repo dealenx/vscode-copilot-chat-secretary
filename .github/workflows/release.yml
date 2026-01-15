@@ -85,9 +85,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
-          name: Release ${{ steps.package-version.outputs.version }}
+          name: ${{ steps.package-version.outputs.prerelease == 'true' && 'Pre-release' || 'Release' }} ${{ steps.package-version.outputs.version }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.package-version.outputs.prerelease }}
           files: "*.vsix"
           token: ${{ secrets.GITHUB_TOKEN }}
           body: |
