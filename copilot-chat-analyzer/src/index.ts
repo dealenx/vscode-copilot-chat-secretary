@@ -61,6 +61,32 @@ interface DialogSession {
   modelId?: string;
 }
 
+interface AIResponse {
+  /** Reference to the original request */
+  requestId: string;
+  /** Response ID if available */
+  responseId?: string;
+  /** Aggregated response text (all parts combined) */
+  message: string;
+  /** Timestamp when response was generated */
+  timestamp?: number;
+  /** Index in the conversation (0-based) */
+  index: number;
+  /** Whether response includes tool calls */
+  hasToolCalls: boolean;
+  /** Number of tool calls in this response */
+  toolCallCount: number;
+}
+
+interface ConversationTurn {
+  /** Turn index (0-based) */
+  index: number;
+  /** User's request */
+  request: UserRequest;
+  /** AI's response (null if no response yet) */
+  response: AIResponse | null;
+}
+
 export const DialogStatus = {
   PENDING: "pending",
   COMPLETED: "completed",
@@ -408,6 +434,101 @@ export class CopilotChatAnalyzer {
 
     return userRequests;
   }
+
+  /**
+   * Extract response text from a request object
+   * Aggregates text from response[] and toolCallRounds[].response
+   */
+  private extractResponseText(request: any): string {
+    const parts: string[] = [];
+
+    // 1. Extract from response array
+    if (Array.isArray(request.response)) {
+      for (const item of request.response) {
+        if (typeof item === "string") {
+          parts.push(item);
+        } else if (item.value && typeof item.value === "string") {
+          parts.push(item.value);
+        }
+      }
+    }
+
+    // 2. Extract from toolCallRounds (for tool-based responses)
+    const toolCallRounds = request.result?.metadata?.toolCallRounds;
+    if (Array.isArray(toolCallRounds)) {
+      for (const round of toolCallRounds) {
+        if (round.response && typeof round.response === "string") {
+          // Only add if not already included
+          if (!parts.includes(round.response)) {
+            parts.push(round.response);
+          }
+        }
+      }
+    }
+
+    return parts.join("\n\n");
+  }
+
+  /**
+   * Count total tool calls in a request
+   */
+  private countToolCalls(request: any): number {
+    const toolCallRounds = request.result?.metadata?.toolCallRounds;
+    if (!Array.isArray(toolCallRounds)) return 0;
+
+    return toolCallRounds.reduce((count: number, round: any) => {
+      return count + (round.toolCalls?.length || 0);
+    }, 0);
+  }
+
+  /**
+   * Get AI responses from chat data
+   * @param chatData - Copilot chat data
+   * @returns array of AI responses
+   */
+  getAIResponses(chatData: CopilotChatData): AIResponse[] {
+    if (!chatData || !Array.isArray(chatData.requests)) {
+      return [];
+    }
+
+    const aiResponses: AIResponse[] = [];
+
+    chatData.requests.forEach((request: any, index: number) => {
+      const message = this.extractResponseText(request);
+      const toolCallCount = this.countToolCalls(request);
+
+      aiResponses.push({
+        requestId: request.requestId || `req-${index}`,
+        responseId: request.responseId,
+        message,
+        timestamp: request.timestamp,
+        index,
+        hasToolCalls: toolCallCount > 0,
+        toolCallCount,
+      });
+    });
+
+    return aiResponses;
+  }
+
+  /**
+   * Get full conversation history with paired requests and responses
+   * @param chatData - Copilot chat data
+   * @returns array of conversation turns (request + response pairs)
+   */
+  getConversationHistory(chatData: CopilotChatData): ConversationTurn[] {
+    const userRequests = this.getUserRequests(chatData);
+    const aiResponses = this.getAIResponses(chatData);
+
+    return userRequests.map((request, index) => {
+      const response = aiResponses.find((r) => r.index === index) || null;
+      return {
+        index,
+        request,
+        response,
+      };
+    });
+  }
 }
 
 export default CopilotChatAnalyzer;
@@ -418,4 +539,6 @@ export type {
   UserRequest,
   DialogStatusDetails,
   DialogSession,
+  AIResponse,
+  ConversationTurn,
 };

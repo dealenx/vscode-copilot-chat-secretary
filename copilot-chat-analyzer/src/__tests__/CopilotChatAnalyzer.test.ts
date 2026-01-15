@@ -446,4 +446,178 @@ describe("CopilotChatAnalyzer", () => {
       });
     });
   });
+
+  describe("getAIResponses", () => {
+    test("should return empty array for empty chat data", () => {
+      expect(analyzer.getAIResponses({})).toEqual([]);
+    });
+
+    test("should return empty array for null chat data", () => {
+      expect(analyzer.getAIResponses(null as any)).toEqual([]);
+    });
+
+    test("should extract response from response[].value", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            responseId: "resp-1",
+            timestamp: 1234567890,
+            response: [{ value: "Hello! How can I help?" }],
+          },
+        ],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses).toHaveLength(1);
+      expect(responses[0]).toMatchObject({
+        requestId: "req-1",
+        responseId: "resp-1",
+        message: "Hello! How can I help?",
+        index: 0,
+        hasToolCalls: false,
+        toolCallCount: 0,
+      });
+    });
+
+    test("should extract response from toolCallRounds[].response", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            response: [],
+            result: {
+              metadata: {
+                toolCallRounds: [
+                  { response: "Let me check that for you.", toolCalls: [] },
+                ],
+              },
+            },
+          },
+        ],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses[0].message).toBe("Let me check that for you.");
+    });
+
+    test("should aggregate multiple response parts", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            response: [{ value: "Part 1" }, { value: "Part 2" }],
+          },
+        ],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses[0].message).toBe("Part 1\n\nPart 2");
+    });
+
+    test("should not duplicate response text from toolCallRounds", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            response: [{ value: "Same text" }],
+            result: {
+              metadata: {
+                toolCallRounds: [{ response: "Same text", toolCalls: [] }],
+              },
+            },
+          },
+        ],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses[0].message).toBe("Same text");
+    });
+
+    test("should count tool calls correctly", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            response: [],
+            result: {
+              metadata: {
+                toolCallRounds: [
+                  { response: "Response", toolCalls: [{}, {}, {}] },
+                  { response: "More", toolCalls: [{}, {}] },
+                ],
+              },
+            },
+          },
+        ],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses[0].hasToolCalls).toBe(true);
+      expect(responses[0].toolCallCount).toBe(5);
+    });
+
+    test("should handle empty/missing response gracefully", () => {
+      const chatData = {
+        requests: [{ requestId: "req-1" }],
+      };
+      const responses = analyzer.getAIResponses(chatData);
+      expect(responses[0].message).toBe("");
+      expect(responses[0].hasToolCalls).toBe(false);
+    });
+  });
+
+  describe("getConversationHistory", () => {
+    test("should return empty array for empty chat data", () => {
+      expect(analyzer.getConversationHistory({})).toEqual([]);
+    });
+
+    test("should pair request with response", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            message: { text: "Hello" },
+            response: [{ value: "Hi there!" }],
+          },
+        ],
+      };
+      const history = analyzer.getConversationHistory(chatData);
+      expect(history).toHaveLength(1);
+      expect(history[0].index).toBe(0);
+      expect(history[0].request.message).toBe("Hello");
+      expect(history[0].response?.message).toBe("Hi there!");
+    });
+
+    test("should handle multiple turns", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "req-1",
+            message: { text: "First question" },
+            response: [{ value: "First answer" }],
+          },
+          {
+            requestId: "req-2",
+            message: { text: "Second question" },
+            response: [{ value: "Second answer" }],
+          },
+        ],
+      };
+      const history = analyzer.getConversationHistory(chatData);
+      expect(history).toHaveLength(2);
+      expect(history[0].request.message).toBe("First question");
+      expect(history[0].response?.message).toBe("First answer");
+      expect(history[1].request.message).toBe("Second question");
+      expect(history[1].response?.message).toBe("Second answer");
+    });
+
+    test("should maintain correct ordering", () => {
+      const chatData = {
+        requests: [
+          { requestId: "a", message: { text: "A" }, response: [] },
+          { requestId: "b", message: { text: "B" }, response: [] },
+          { requestId: "c", message: { text: "C" }, response: [] },
+        ],
+      };
+      const history = analyzer.getConversationHistory(chatData);
+      expect(history.map((h) => h.index)).toEqual([0, 1, 2]);
+      expect(history.map((h) => h.request.message)).toEqual(["A", "B", "C"]);
+    });
+  });
 });

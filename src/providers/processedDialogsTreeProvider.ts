@@ -4,6 +4,8 @@ import CopilotChatAnalyzer, {
   DialogStatus,
   DialogStatusType,
   type UserRequest,
+  type AIResponse,
+  type ConversationTurn,
 } from "copilot-chat-analyzer";
 import { DialogSessionRecord } from "../services/dialogSessionsTypes";
 import { DialogSessionsServiceImpl } from "../services/dialogSessionsService";
@@ -43,6 +45,7 @@ export class ProcessedDialogsTreeProvider
   private sessionsService: DialogSessionsServiceImpl | undefined;
   private chatAnalyzer: CopilotChatAnalyzer;
   private requestsCache: Map<string, UserRequest[]> = new Map();
+  private conversationCache: Map<string, ConversationTurn[]> = new Map();
 
   constructor() {
     this.chatAnalyzer = new CopilotChatAnalyzer();
@@ -64,6 +67,11 @@ export class ProcessedDialogsTreeProvider
   async getChildren(
     element?: ProcessedDialogItem
   ): Promise<ProcessedDialogItem[]> {
+    // If element is a request item, return AI response as child
+    if (element && element.contextValue === "dialogRequestItem") {
+      return this.getResponseForRequest(element);
+    }
+
     // If element is a dialog item, return all user requests as children
     if (element && element.record) {
       return this.getRequestsForDialog(element.record);
@@ -100,6 +108,63 @@ export class ProcessedDialogsTreeProvider
     return sessions.map((session) => this.createSessionItem(session));
   }
 
+  private getResponseForRequest(
+    requestItem: ProcessedDialogItem
+  ): ProcessedDialogItem[] {
+    // Parse session ID and request index from item ID
+    // Format: "${sessionId}-request-${index}"
+    const itemId = requestItem.itemId || "";
+    const parts = itemId.split("-request-");
+    if (parts.length !== 2) {
+      return [];
+    }
+
+    const sessionId = parts[0];
+    const requestIndex = parseInt(parts[1], 10);
+
+    const conversation = this.conversationCache.get(sessionId);
+    if (!conversation) {
+      return [];
+    }
+
+    const turn = conversation.find((t) => t.index === requestIndex);
+    if (!turn || !turn.response) {
+      return [
+        new ProcessedDialogItem(
+          "(no response)",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "responseEmpty",
+          new vscode.ThemeIcon("circle-slash"),
+          "No AI response available"
+        ),
+      ];
+    }
+
+    const response = turn.response;
+    const truncatedResponse =
+      response.message.length > 50
+        ? response.message.substring(0, 50) + "..."
+        : response.message || "(empty response)";
+
+    const toolInfo =
+      response.toolCallCount > 0 ? ` [${response.toolCallCount} tools]` : "";
+
+    return [
+      new ProcessedDialogItem(
+        `🤖 ${truncatedResponse}${toolInfo}`,
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "responseItem",
+        new vscode.ThemeIcon("hubot"),
+        response.message || "Empty response", // Full response in tooltip
+        `${sessionId}-response-${requestIndex}`
+      ),
+    ];
+  }
+
   private async getRequestsForDialog(
     record: DialogSessionRecord
   ): Promise<ProcessedDialogItem[]> {
@@ -133,7 +198,9 @@ export class ProcessedDialogsTreeProvider
       const chatData = JSON.parse(jsonContent);
 
       const requests = this.chatAnalyzer.getUserRequests(chatData);
+      const conversation = this.chatAnalyzer.getConversationHistory(chatData);
       this.requestsCache.set(sessionId, requests);
+      this.conversationCache.set(sessionId, conversation);
 
       return this.createRequestItems(requests, sessionId);
     } catch (error) {
@@ -177,7 +244,7 @@ export class ProcessedDialogsTreeProvider
 
       return new ProcessedDialogItem(
         `#${index + 1}: "${truncatedMessage}"`,
-        vscode.TreeItemCollapsibleState.None,
+        vscode.TreeItemCollapsibleState.Collapsed, // Changed to Collapsed to show AI response
         undefined,
         undefined,
         "dialogRequestItem",
