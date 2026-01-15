@@ -43,5 +43,5 @@
 
 - [x] Library builds without errors
 - [x] Extension builds without errors
-- [ ] User Requests view shows correct messages
-- [ ] Tooltip shows full message text
+- [x] User Requests view shows correct messages
+- [x] Tooltip shows full message text
