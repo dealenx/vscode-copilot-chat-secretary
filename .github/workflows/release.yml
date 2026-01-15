@@ -57,8 +57,8 @@ jobs:
         id: package-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Compile TypeScript
-        run: npm run compile
+      - name: Build
+        run: pnpm run build
 
       - name: Package extension
         run: vsce package

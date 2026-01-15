@@ -32,11 +32,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Compile TypeScript
-        run: npm run compile
+      - name: Build
+        run: pnpm run build
 
       - name: Install VSCE
-        run: npm install -g @vscode/vsce
+        run: pnpm add -g @vscode/vsce
 
       - name: Package extension
         run: vsce package
