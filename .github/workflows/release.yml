@@ -36,8 +36,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install VSCE
-        run: npm install -g @vscode/vsce
+      - name: Install copilot-chat-analyzer dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: copilot-chat-analyzer
 
       - name: Update version (if manual trigger)
         if: github.event_name == 'workflow_dispatch'
@@ -57,7 +58,11 @@ jobs:
         id: package-version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Build
+      - name: Build copilot-chat-analyzer
+        run: pnpm run build
+        working-directory: copilot-chat-analyzer
+
+      - name: Build extension
         run: pnpm run build
 
       - name: Package extension

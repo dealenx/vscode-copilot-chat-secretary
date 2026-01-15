@@ -32,7 +32,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
+      - name: Install copilot-chat-analyzer dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: copilot-chat-analyzer
+
+      - name: Build copilot-chat-analyzer
+        run: pnpm run build
+        working-directory: copilot-chat-analyzer
+
+      - name: Build extension
         run: pnpm run build
 
       - name: Install VSCE
