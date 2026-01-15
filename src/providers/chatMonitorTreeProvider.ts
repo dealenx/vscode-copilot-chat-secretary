@@ -1,6 +1,6 @@
 // providers/chatMonitorTreeProvider.ts
 import * as vscode from "vscode";
-import CopilotChatAnalyzer from "copilot-chat-analyzer";
+import CopilotChatAnalyzer, { type UserRequest } from "copilot-chat-analyzer";
 import {
   ChatMonitorData,
   ChatMonitorSubscriber,
@@ -28,13 +28,6 @@ export class ChatMonitorTreeItem extends vscode.TreeItem {
   }
 }
 
-interface ChatRequest {
-  id: string;
-  message: string;
-  timestamp?: number;
-  index: number;
-}
-
 interface ChatStatus {
   status: string;
   lastUpdate: Date;
@@ -43,7 +36,7 @@ interface ChatStatus {
   requestsCount: number;
   lastRequestId?: string;
   statusDetails?: any;
-  requests: ChatRequest[];
+  requests: UserRequest[];
 }
 
 import { RequestsTreeProvider } from "./requestsTreeProvider";
@@ -225,37 +218,6 @@ export class ChatMonitorTreeProvider
     return items;
   }
 
-  private truncateMessage(message: string, maxLength: number): string {
-    // Remove newlines and extra spaces
-    const cleanMessage = message.replace(/\s+/g, " ").trim();
-    if (cleanMessage.length <= maxLength) {
-      return cleanMessage;
-    }
-    return cleanMessage.substring(0, maxLength - 3) + "...";
-  }
-
-  private parseRequests(chatData: any): ChatRequest[] {
-    const requests: ChatRequest[] = [];
-
-    if (!chatData.requests || !Array.isArray(chatData.requests)) {
-      return requests;
-    }
-
-    chatData.requests.forEach((request: any, index: number) => {
-      // Extract user message from the request
-      if (request.message && typeof request.message === "string") {
-        requests.push({
-          id: request.variableData?.requestId || `req-${index}`,
-          message: request.message,
-          timestamp: request.timestamp,
-          index: index,
-        });
-      }
-    });
-
-    return requests;
-  }
-
   private async checkChatStatus(): Promise<void> {
     try {
       // Создаем временный файл для экспорта чата в JSON формате
@@ -341,12 +303,27 @@ export class ChatMonitorTreeProvider
         this.chatStatus.statusDetails = statusDetails;
         this.chatStatus.lastRequestId = statusDetails.lastRequestId;
 
-        // Parse and store user requests
-        this.chatStatus.requests = this.parseRequests(chatData);
+        // Debug: log first request structure to understand format
+        if (chatData.requests && chatData.requests.length > 0) {
+          console.log(`First request keys:`, Object.keys(chatData.requests[0]));
+          console.log(
+            `First request sample:`,
+            JSON.stringify(chatData.requests[0]).substring(0, 500)
+          );
+        }
 
-        // Update requests provider
+        // Parse and store user requests using library method
+        this.chatStatus.requests = this.chatAnalyzer.getUserRequests(chatData);
+        console.log(`Parsed user requests: ${this.chatStatus.requests.length}`);
+
+        // Update requests provider - always update to ensure sync
         if (this.requestsProvider) {
+          console.log(
+            `Updating requests provider with ${this.chatStatus.requests.length} requests`
+          );
           this.requestsProvider.updateRequests(this.chatStatus.requests);
+        } else {
+          console.log(`No requests provider set`);
         }
 
         if (statusChanged || hasChanged) {

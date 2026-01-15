@@ -45,6 +45,13 @@ interface McpMonitoringSummary {
   tools: McpToolMonitoring[];
 }
 
+interface UserRequest {
+  id: string;
+  message: string;
+  timestamp?: number;
+  index: number;
+}
+
 export const DialogStatus = {
   PENDING: "pending",
   COMPLETED: "completed",
@@ -295,7 +302,50 @@ export class CopilotChatAnalyzer {
 
     return Array.from(uniqueNames);
   }
+
+  /**
+   * Получить историю запросов пользователя из данных чата
+   * @param chatData - данные чата Copilot
+   * @returns массив запросов пользователя с текстом сообщения
+   */
+  getUserRequests(chatData: CopilotChatData): UserRequest[] {
+    if (!chatData || !Array.isArray(chatData.requests)) {
+      return [];
+    }
+
+    const userRequests: UserRequest[] = [];
+
+    chatData.requests.forEach((request: any, index: number) => {
+      // message can be a string or an object with text property
+      let messageText: string | undefined;
+
+      if (typeof request.message === "string") {
+        messageText = request.message;
+      } else if (request.message && typeof request.message.text === "string") {
+        messageText = request.message.text;
+      }
+
+      if (messageText) {
+        userRequests.push({
+          id:
+            request.variableData?.requestId ||
+            request.requestId ||
+            `req-${index}`,
+          message: messageText,
+          timestamp: request.timestamp,
+          index: index,
+        });
+      }
+    });
+
+    return userRequests;
+  }
 }
 
 export default CopilotChatAnalyzer;
-export type { McpToolCall, McpToolMonitoring, McpMonitoringSummary };
+export type {
+  McpToolCall,
+  McpToolMonitoring,
+  McpMonitoringSummary,
+  UserRequest,
+};

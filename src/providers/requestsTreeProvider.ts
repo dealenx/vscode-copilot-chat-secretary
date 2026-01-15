@@ -1,22 +1,18 @@
 // providers/requestsTreeProvider.ts
 import * as vscode from "vscode";
+import CopilotChatAnalyzer, { type UserRequest } from "copilot-chat-analyzer";
 import {
   ChatMonitorData,
   ChatMonitorSubscriber,
 } from "../services/chatMonitorTypes";
 
-export interface ChatRequest {
-  id: string;
-  message: string;
-  timestamp?: number;
-  index: number;
-}
+export { UserRequest };
 
 export class RequestTreeItem extends vscode.TreeItem {
   constructor(
     public readonly label: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-    public readonly request?: ChatRequest,
+    public readonly request?: UserRequest,
     public readonly contextValue?: string,
     public readonly iconPath?: string | vscode.ThemeIcon,
     public readonly tooltip?: string,
@@ -42,10 +38,12 @@ export class RequestsTreeProvider
     RequestTreeItem | undefined | null | void
   > = this._onDidChangeTreeData.event;
 
-  private requests: ChatRequest[] = [];
-  private chatContent: string = "";
+  private requests: UserRequest[] = [];
+  private chatAnalyzer: CopilotChatAnalyzer;
 
-  constructor() {}
+  constructor() {
+    this.chatAnalyzer = new CopilotChatAnalyzer();
+  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -59,35 +57,14 @@ export class RequestsTreeProvider
   onChatCompleted?(): void {}
   onChatError?(error: string): void {}
 
-  updateRequests(requests: ChatRequest[]): void {
+  updateRequests(requests: UserRequest[]): void {
     this.requests = requests;
     this.refresh();
   }
 
   updateFromChatData(chatData: any): void {
-    this.requests = this.parseRequests(chatData);
+    this.requests = this.chatAnalyzer.getUserRequests(chatData);
     this.refresh();
-  }
-
-  private parseRequests(chatData: any): ChatRequest[] {
-    const requests: ChatRequest[] = [];
-
-    if (!chatData || !chatData.requests || !Array.isArray(chatData.requests)) {
-      return requests;
-    }
-
-    chatData.requests.forEach((request: any, index: number) => {
-      if (request.message && typeof request.message === "string") {
-        requests.push({
-          id: request.variableData?.requestId || `req-${index}`,
-          message: request.message,
-          timestamp: request.timestamp,
-          index: index,
-        });
-      }
-    });
-
-    return requests;
   }
 
   getTreeItem(element: RequestTreeItem): vscode.TreeItem {

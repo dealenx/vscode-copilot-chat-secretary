@@ -17,6 +17,7 @@
     "test-*.ts",
     "test-*.js",
     "tests",
-    "examples"
+    "examples",
+    "copilot-chat-analyzer"
   ]
 }
