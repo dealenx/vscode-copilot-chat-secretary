@@ -1,0 +1,45 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task: build
+
+    deps:
+      - install
+
+  build:
+    cmd: pnpm run build
+    deps:
+      - install
+
+  install:
+    cmd: pnpm install
+    run: once
+    status:
+      - test -d node_modules
+
+  example:
+    desc: "Run parse-export-chat-json example"
+    dir: examples/parse-export-chat-json
+    cmds:
+      - pnpm install
+      - node index.js
+    deps:
+      - build
+
+  test:
+    desc: "Run tests"
+    cmd: pnpm test
+    deps:
+      - install
+
+  test:coverage:
+    desc: "Run tests with coverage report"
+    cmd: pnpm test:coverage
+    deps:
+      - install
+
+  mise:
+    desc: "Mise installation"
+    cmd: mise install
