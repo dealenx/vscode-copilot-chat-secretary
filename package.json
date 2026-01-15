@@ -2,7 +2,7 @@
   "name": "copilot-chat-secretary",
   "displayName": "Copilot Chat Secretary",
   "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "publisher": "dealenx",
   "engines": {
     "vscode": "^1.104.0"

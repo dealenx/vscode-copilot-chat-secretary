@@ -43,6 +43,42 @@ describe("CopilotChatAnalyzer", () => {
       expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.CANCELED);
     });
 
+    test("should return CANCELED when errorDetails.code is 'canceled'", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              errorDetails: {
+                code: "canceled",
+                message: "Canceled",
+                responseIsIncomplete: true,
+              },
+            },
+            followups: [],
+          },
+        ],
+      };
+      expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.CANCELED);
+    });
+
+    test("should prioritize errorDetails.code 'canceled' over errorDetails existence", () => {
+      const chatData = {
+        requests: [
+          {
+            requestId: "1",
+            result: {
+              errorDetails: {
+                code: "canceled",
+                message: "User canceled the request",
+              },
+            },
+          },
+        ],
+      };
+      expect(analyzer.getDialogStatus(chatData)).toBe(DialogStatus.CANCELED);
+    });
+
     test("should return COMPLETED when last request has empty followups", () => {
       const chatData = {
         requests: [{ requestId: "1", followups: [] }],

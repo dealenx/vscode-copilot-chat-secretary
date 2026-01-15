@@ -170,13 +170,19 @@ export class CopilotChatAnalyzer {
       return DialogStatus.PENDING;
     }
 
-    // Check canceled first (user action)
+    // Check canceled first (user action via legacy field)
     if (lastRequest.isCanceled === true) {
       return DialogStatus.CANCELED;
     }
 
-    // Check failed (API error) - before completed/in_progress
-    if (lastRequest?.result?.errorDetails) {
+    // Check errorDetails for canceled or failed status
+    const errorDetails = lastRequest?.result?.errorDetails;
+    if (errorDetails) {
+      // Check if canceled via errorDetails.code (newer format)
+      if (errorDetails.code === "canceled") {
+        return DialogStatus.CANCELED;
+      }
+      // Other error codes mean failure
       return DialogStatus.FAILED;
     }
 

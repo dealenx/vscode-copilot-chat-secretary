@@ -1,0 +1,355 @@
+{
+  "responderUsername": "GitHub Copilot",
+  "responderAvatarIconUri": {
+    "id": "copilot"
+  },
+  "initialLocation": "panel",
+  "requests": [
+    {
+      "requestId": "request_523af7cd-8654-482f-b220-237a9ea4e35e",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 27
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 28
+            },
+            "text": "Проанализиуй фразу длинную ",
+            "kind": "text"
+          }
+        ],
+        "text": "Проанализиуй фразу длинную "
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "vscode.prompt.instructions.root__file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "name": "prompt:tools.instructions.md",
+            "value": {
+              "$mid": 1,
+              "fsPath": "c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md",
+              "_sep": 1,
+              "external": "file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+              "path": "/C:/Users/dealenx/.aitk/instructions/tools.instructions.md",
+              "scheme": "file"
+            },
+            "kind": "promptFile",
+            "modelDescription": "Prompt instructions file",
+            "isRoot": true,
+            "originLabel": "Automatically attached as pattern is **",
+            "automaticallyAdded": true
+          },
+          {
+            "id": "vscode.prompt.instructions.text",
+            "name": "prompt:instructionsList",
+            "value": "<instructions>\nHere is a list of instruction files that contain rules for modifying or creating new code.\nThese files are important for ensuring that the code is modified or created correctly.\nPlease make sure to follow the rules specified in these files when working with the codebase.\nIf the file is not already available as attachment, use the #tool:readFile tool to acquire it.\nMake sure to acquire the instructions before making any changes to the code.\n<instruction>\n<description>AI Toolkit provides tools for AI/Agent app development</description>\n<file>c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md</file>\n<applyTo>**</applyTo>\n</instruction>\n</instructions>\n\n",
+            "kind": "promptText",
+            "modelDescription": "Prompt instructions list",
+            "automaticallyAdded": true,
+            "toolReferences": [
+              {
+                "kind": "tool",
+                "id": "copilot_readFile",
+                "name": "Read File",
+                "range": {
+                  "start": 347,
+                  "endExclusive": 361
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "response": [
+        {
+          "kind": "mcpServersStarting",
+          "didStartServerIds": []
+        },
+        {
+          "kind": "thinking",
+          "value": "The user has written \"Проанализиуй фразу длинную\" which is in Russian. Let me translate this:\n\n\"Проанализируй фразу длинную\" means \"Analyze the long phrase\"\n\nHowever, the user hasn't provided any phrase to analyze. They're asking me to analyze a long phrase but haven't given me the phrase itself.\n\nI should respond in a brief manner asking them to provide the phrase they want me to analyze. Since they wrote in Russian, I should probably respond in Russian to match their language preference.",
+          "id": "1768500943901",
+          "generatedTitle": "Запросил фразу для анализа"
+        },
+        {
+          "kind": "thinking",
+          "value": "",
+          "id": "",
+          "metadata": {
+            "vscodeReasoningDone": true,
+            "stopReason": "other"
+          }
+        },
+        {
+          "value": "Вы просите проанализировать длинную фразу, но не предоставили саму фразу. Пожалуйста, укажите текст, который нужно проанализировать.\n\n---\n\nYou're asking me to analyze a long phrase, but you haven't provided the phrase itself. Please share the text you'd like me to analyze.",
+          "supportThemeIcons": false,
+          "supportHtml": false
+        }
+      ],
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "extensionVersion": "0.36.1",
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.editsAgent",
+        "description": "Edit files in your workspace in agent mode",
+        "when": "config.chat.agent.enabled",
+        "metadata": {
+          "themeIcon": {
+            "id": "tools"
+          },
+          "hasFollowups": false,
+          "supportIssueReporting": false
+        },
+        "name": "agent",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "modes": [
+          "agent"
+        ],
+        "slashCommands": [],
+        "disambiguation": []
+      },
+      "timestamp": 1768500939303,
+      "modelId": "copilot/claude-sonnet-4.5",
+      "responseId": "response_dc4edbce-2938-4a8b-b629-ef72cb3ec31a",
+      "result": {
+        "timings": {
+          "firstProgress": 7333,
+          "totalElapsed": 8416
+        },
+        "metadata": {
+          "codeBlocks": [],
+          "renderedUserMessage": [
+            {
+              "type": 1,
+              "text": "<context>\nThe current date is January 16, 2026.\n</context>\n<reminderInstructions>\nWhen using the replace_string_in_file tool, include 3-5 lines of unchanged code before and after the string you want to replace, to make it unambiguous which part of the file should be edited.\nFor maximum efficiency, whenever you plan to perform multiple independent edit operations, invoke them simultaneously using multi_replace_string_in_file tool rather than sequentially. This will greatly improve user's cost and time efficiency leading to a better user experience. Do not announce which tool you're using (for example, avoid saying \"I'll implement all the changes using multi_replace_string_in_file\").\nDo NOT create a new markdown file to document each change or summarize your work unless specifically requested by the user.\n\n</reminderInstructions>\n<userRequest>\nПроанализиуй фразу длинную \n</userRequest>\n"
+            },
+            {
+              "type": 3,
+              "cacheType": "ephemeral"
+            }
+          ],
+          "renderedGlobalContext": [
+            {
+              "type": 1,
+              "text": "<environment_info>\nThe user's current OS is: Windows\n</environment_info>\n<workspace_info>\nThere is no workspace currently open.\n</workspace_info>\n"
+            },
+            {
+              "type": 3,
+              "cacheType": "ephemeral"
+            }
+          ],
+          "cacheKey": "",
+          "toolCallRounds": [
+            {
+              "response": "Вы просите проанализировать длинную фразу, но не предоставили саму фразу. Пожалуйста, укажите текст, который нужно проанализировать.\n\n---\n\nYou're asking me to analyze a long phrase, but you haven't provided the phrase itself. Please share the text you'd like me to analyze.",
+              "toolCalls": [],
+              "toolInputRetry": 0,
+              "id": "d0371831-9789-4691-aa8a-9f009d308cb7",
+              "thinking": {
+                "id": "pgTSYD8c7omWnTswws26Dc8Pep8OwwGaz8SWE4qTlkj4U/wLF1udrET35q1BPROIlnPljg78jmRARyvneiEKnCV1T5oby6k5y5I0KFigRsLfcLqejplDlBi9rKmzXwbiImcbz5gnL2ctEtW301lv+dRN0hS4BHcjz67FUl5WD8LcF2UtZ4+4AhK6Cu3U+Uwxx7+cEvzGdfe/qXEIkH6elrPM868hXNBnCKAo6vHvYl2H+C1m4UWfPXrqUtvtCAKN+S7Nc4CRs+Y9L1sh7TvCviUNHab8qK9j8/BMJv18yh3r5uRKoZhcbsXRTihZCnHeu400VfDSMKivW3c5BE7xIRsXWTi6uhuxZ7MbSCgRBP4eCR3ctDbKpKzRFav6IbGaucEOSPh9PR9RhZcVV5NKQ8B/VleL81rldqYnzH1X3sBZRaU5MGB1qwsNDS3mQiQaOpIGdYN1HKlvCOIHCvL1xn/ViwDyJnb8n15oV/uAGrY46W9F97kCvNVQkyo2cZ4eyeCv5YZcJBayCQENgKfuxsvLbP7Dw/roAPka7vH7TKYeDfQoHKer+jMEqSiEJb1V/qWi0nS6elB2ThfO+V2zyUixwKLSEU6Dwi9FZ4qU+XcWSkFhJw3OeBBH0CHu41nCxpalDJNbygmUC+23K5ILBUOppqsOn1o6UV1I85+xBzwhH2GfHMXqitpRRE77ZD7wybkFQ9hiR3ci0J+TgxmFAO2o5Lk5HxxBY8avNMkbvN42Txr2fjKD05YSIHyf2JKjkjwhHmldKERBKovXWJCnB9tcJ+4oxcPviBQUrZ6XUsGHQ1JOrDf3tI2lxl+KrUjs07ebF2jEqnwezVwO59SmrGcBDyKtrWm2jN0+qVuustLSTG4ed62hvvV9yy8wRSyJe4pCyWL0+6Ypp9c+JJDyGWKe62C67WBmwxxX5H5BhJD+ODxJk2FJuKF8XXUk9qB/5AXIJPx0ChEiNuutlQd6CxHYN33VZjEB15JpKVygLCKxdm6FYrfFHr0RPS20H6jfNy6ALpgMiFhXmkeGmyrZffX5ucw0w44eA2a48vFiv5QaVm4M2knhQKknPs+x0JJ2XkBCq1pv2SZ/zoerA/sM/Qnt+T4UhC3iN32d7q20aUbENY85BtTWCG54R6VeqcAv/oMHHvzhwQvfyqUxe3TVd67nnDvjijeRONckU01Eba489dFjtljt9BSuXBd4aYmYQG1wvdGfboRaANviawsKu5djNZ/GDQnZGrj/MEpLNCygKH/c71mLJnjx3INWmGj5Kph7FuV5DteYoEu77D8F1ZAiPpaW4pv+a24MBu5YeEN94RuXKKypJZLQPoN0RwNKhua7He/5oVYF7h5C0Fds/w8N5nzMme4nLftwyWB4odcz+F7arbyLafeYUEeB6pny6GvQU2qrEGdxeK35GJ0XtK/FgxDqoMuNVm6j58xq1Qam+Qoxavil9hGu/SqAwYqzZ70fb3xUeqKqpgDrPMwJDWfiDZre4ZLHHFeLJm1BgyjaX0KQG5KeMKSw6qFTVlg8K3vSQt0kK7lVFWoxr9QKH4GFYwzz6XCB6O3+tOoR6ABORG1iek4gX91D+rJB3omDkl4B9Q0Nu9KcafyoGOiGMoLqfFlQRo2OP5fE7oBN",
+                "text": "The user has written \"Проанализиуй фразу длинную\" which is in Russian. Let me translate this:\n\n\"Проанализируй фразу длинную\" means \"Analyze the long phrase\"\n\nHowever, the user hasn't provided any phrase to analyze. They're asking me to analyze a long phrase but haven't given me the phrase itself.\n\nI should respond in a brief manner asking them to provide the phrase they want me to analyze. Since they wrote in Russian, I should probably respond in Russian to match their language preference.",
+                "encrypted": "pgTSYD8c7omWnTswws26Dc8Pep8OwwGaz8SWE4qTlkj4U/wLF1udrET35q1BPROIlnPljg78jmRARyvneiEKnCV1T5oby6k5y5I0KFigRsLfcLqejplDlBi9rKmzXwbiImcbz5gnL2ctEtW301lv+dRN0hS4BHcjz67FUl5WD8LcF2UtZ4+4AhK6Cu3U+Uwxx7+cEvzGdfe/qXEIkH6elrPM868hXNBnCKAo6vHvYl2H+C1m4UWfPXrqUtvtCAKN+S7Nc4CRs+Y9L1sh7TvCviUNHab8qK9j8/BMJv18yh3r5uRKoZhcbsXRTihZCnHeu400VfDSMKivW3c5BE7xIRsXWTi6uhuxZ7MbSCgRBP4eCR3ctDbKpKzRFav6IbGaucEOSPh9PR9RhZcVV5NKQ8B/VleL81rldqYnzH1X3sBZRaU5MGB1qwsNDS3mQiQaOpIGdYN1HKlvCOIHCvL1xn/ViwDyJnb8n15oV/uAGrY46W9F97kCvNVQkyo2cZ4eyeCv5YZcJBayCQENgKfuxsvLbP7Dw/roAPka7vH7TKYeDfQoHKer+jMEqSiEJb1V/qWi0nS6elB2ThfO+V2zyUixwKLSEU6Dwi9FZ4qU+XcWSkFhJw3OeBBH0CHu41nCxpalDJNbygmUC+23K5ILBUOppqsOn1o6UV1I85+xBzwhH2GfHMXqitpRRE77ZD7wybkFQ9hiR3ci0J+TgxmFAO2o5Lk5HxxBY8avNMkbvN42Txr2fjKD05YSIHyf2JKjkjwhHmldKERBKovXWJCnB9tcJ+4oxcPviBQUrZ6XUsGHQ1JOrDf3tI2lxl+KrUjs07ebF2jEqnwezVwO59SmrGcBDyKtrWm2jN0+qVuustLSTG4ed62hvvV9yy8wRSyJe4pCyWL0+6Ypp9c+JJDyGWKe62C67WBmwxxX5H5BhJD+ODxJk2FJuKF8XXUk9qB/5AXIJPx0ChEiNuutlQd6CxHYN33VZjEB15JpKVygLCKxdm6FYrfFHr0RPS20H6jfNy6ALpgMiFhXmkeGmyrZffX5ucw0w44eA2a48vFiv5QaVm4M2knhQKknPs+x0JJ2XkBCq1pv2SZ/zoerA/sM/Qnt+T4UhC3iN32d7q20aUbENY85BtTWCG54R6VeqcAv/oMHHvzhwQvfyqUxe3TVd67nnDvjijeRONckU01Eba489dFjtljt9BSuXBd4aYmYQG1wvdGfboRaANviawsKu5djNZ/GDQnZGrj/MEpLNCygKH/c71mLJnjx3INWmGj5Kph7FuV5DteYoEu77D8F1ZAiPpaW4pv+a24MBu5YeEN94RuXKKypJZLQPoN0RwNKhua7He/5oVYF7h5C0Fds/w8N5nzMme4nLftwyWB4odcz+F7arbyLafeYUEeB6pny6GvQU2qrEGdxeK35GJ0XtK/FgxDqoMuNVm6j58xq1Qam+Qoxavil9hGu/SqAwYqzZ70fb3xUeqKqpgDrPMwJDWfiDZre4ZLHHFeLJm1BgyjaX0KQG5KeMKSw6qFTVlg8K3vSQt0kK7lVFWoxr9QKH4GFYwzz6XCB6O3+tOoR6ABORG1iek4gX91D+rJB3omDkl4B9Q0Nu9KcafyoGOiGMoLqfFlQRo2OP5fE7oBN"
+              }
+            }
+          ],
+          "modelMessageId": "a0003594-329e-49ce-8d15-f7c26ec09c66",
+          "responseId": "79e4d22a-5790-4022-9a3c-caaabbe6170a",
+          "sessionId": "fbec814e-570a-4a23-84fa-377a83276eab",
+          "agentId": "github.copilot.editsAgent"
+        },
+        "details": "Claude Sonnet 4.5 • 1x"
+      },
+      "responseMarkdownInfo": [],
+      "followups": [],
+      "modelState": {
+        "value": 1,
+        "completedAt": 1768500947749
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md",
+            "_sep": 1,
+            "external": "file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "path": "/C:/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "scheme": "file"
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timeSpentWaiting": 0
+    },
+    {
+      "requestId": "request_70c4f858-06b8-4d4e-aeb2-41bd1d7fc442",
+      "message": {
+        "parts": [
+          {
+            "range": {
+              "start": 0,
+              "endExclusive": 33
+            },
+            "editorRange": {
+              "startLineNumber": 1,
+              "startColumn": 1,
+              "endLineNumber": 1,
+              "endColumn": 34
+            },
+            "text": "Ты проанализировал длинную фразу?",
+            "kind": "text"
+          }
+        ],
+        "text": "Ты проанализировал длинную фразу?"
+      },
+      "variableData": {
+        "variables": [
+          {
+            "id": "vscode.prompt.instructions.root__file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "name": "prompt:tools.instructions.md",
+            "value": {
+              "$mid": 1,
+              "fsPath": "c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md",
+              "_sep": 1,
+              "external": "file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+              "path": "/C:/Users/dealenx/.aitk/instructions/tools.instructions.md",
+              "scheme": "file"
+            },
+            "kind": "promptFile",
+            "modelDescription": "Prompt instructions file",
+            "isRoot": true,
+            "originLabel": "Automatically attached as pattern is **",
+            "automaticallyAdded": true
+          },
+          {
+            "id": "vscode.prompt.instructions.text",
+            "name": "prompt:instructionsList",
+            "value": "<instructions>\nHere is a list of instruction files that contain rules for modifying or creating new code.\nThese files are important for ensuring that the code is modified or created correctly.\nPlease make sure to follow the rules specified in these files when working with the codebase.\nIf the file is not already available as attachment, use the #tool:readFile tool to acquire it.\nMake sure to acquire the instructions before making any changes to the code.\n<instruction>\n<description>AI Toolkit provides tools for AI/Agent app development</description>\n<file>c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md</file>\n<applyTo>**</applyTo>\n</instruction>\n</instructions>\n\n",
+            "kind": "promptText",
+            "modelDescription": "Prompt instructions list",
+            "automaticallyAdded": true,
+            "toolReferences": [
+              {
+                "kind": "tool",
+                "id": "copilot_readFile",
+                "name": "Read File",
+                "range": {
+                  "start": 347,
+                  "endExclusive": 361
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "response": [
+        {
+          "kind": "mcpServersStarting",
+          "didStartServerIds": []
+        }
+      ],
+      "agent": {
+        "extensionId": {
+          "value": "GitHub.copilot-chat",
+          "_lower": "github.copilot-chat"
+        },
+        "extensionVersion": "0.36.1",
+        "publisherDisplayName": "GitHub",
+        "extensionPublisherId": "GitHub",
+        "extensionDisplayName": "GitHub Copilot Chat",
+        "id": "github.copilot.editsAgent",
+        "description": "Edit files in your workspace in agent mode",
+        "when": "config.chat.agent.enabled",
+        "metadata": {
+          "themeIcon": {
+            "id": "tools"
+          },
+          "hasFollowups": false,
+          "supportIssueReporting": false
+        },
+        "name": "agent",
+        "fullName": "GitHub Copilot",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ],
+        "modes": [
+          "agent"
+        ],
+        "slashCommands": [],
+        "disambiguation": []
+      },
+      "timestamp": 1768500956647,
+      "modelId": "copilot/claude-sonnet-4.5",
+      "responseId": "response_3f14b186-07be-46b3-a164-cea22348d58b",
+      "result": {
+        "errorDetails": {
+          "code": "canceled",
+          "message": "Canceled",
+          "confirmationButtons": [
+            {
+              "data": {
+                "copilotContinueOnError": true
+              },
+              "label": "Try Again"
+            }
+          ],
+          "responseIsIncomplete": true
+        },
+        "timings": {
+          "totalElapsed": 1466
+        },
+        "metadata": {
+          "toolCallRounds": [
+            {
+              "response": "",
+              "toolCalls": [],
+              "toolInputRetry": 0,
+              "id": "418ae20f-dcd6-45e7-9ccd-085ded0997fd"
+            }
+          ],
+          "modelMessageId": "29762a2e-22ae-4e6b-b35d-8b02a8ffe13b",
+          "responseId": "e850af7f-b5f0-44b0-b9ed-225071c66144",
+          "sessionId": "fbec814e-570a-4a23-84fa-377a83276eab",
+          "agentId": "github.copilot.editsAgent"
+        },
+        "details": "Claude Sonnet 4.5 • 1x"
+      },
+      "followups": [],
+      "modelState": {
+        "value": 2,
+        "completedAt": 1768500958094
+      },
+      "contentReferences": [
+        {
+          "kind": "reference",
+          "reference": {
+            "$mid": 1,
+            "fsPath": "c:\\Users\\dealenx\\.aitk\\instructions\\tools.instructions.md",
+            "_sep": 1,
+            "external": "file:///c%3A/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "path": "/C:/Users/dealenx/.aitk/instructions/tools.instructions.md",
+            "scheme": "file"
+          }
+        }
+      ],
+      "codeCitations": [],
+      "timeSpentWaiting": 0
+    }
+  ]
+}
