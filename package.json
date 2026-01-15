@@ -1,0 +1,108 @@
+{
+  "name": "copilot-chat-secretary",
+  "displayName": "Copilot Chat Secretary",
+  "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
+  "version": "0.1.0",
+  "publisher": "copilot-chat-secretary",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/vscode-copilot-chat-secretary"
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run build",
+    "build": "rimraf out && node esbuild.js --production",
+    "watch": "rimraf out && node esbuild.js --watch",
+    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "publish": "vsce publish",
+    "prepackage": "pnpm run build"
+  },
+  "keywords": [
+    "copilot",
+    "chat",
+    "monitor",
+    "status",
+    "ai",
+    "assistant"
+  ],
+  "activationEvents": [
+    "onView:copilotChatSecretaryView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "copilotChatSecretary.refreshStatus",
+        "title": "Refresh Chat Status",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "copilotChatSecretary.showLogs",
+        "title": "Show Logs",
+        "icon": "$(output)"
+      }
+    ],
+    "views": {
+      "copilotChatSecretaryContainer": [
+        {
+          "id": "copilotChatSecretaryView",
+          "name": "Chat Monitor",
+          "icon": "$(comment-discussion)"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "copilotChatSecretaryContainer",
+          "title": "Copilot Chat Secretary",
+          "icon": "$(comment-discussion)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Copilot Chat Secretary",
+      "properties": {
+        "copilotChatSecretary.checkInterval": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 30,
+          "description": "Chat status check interval in seconds"
+        },
+        "copilotChatSecretary.enableLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging to Output panel"
+        }
+      }
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "copilotChatSecretary.refreshStatus",
+          "when": "view == copilotChatSecretaryView",
+          "group": "navigation@1"
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/node": "16.x",
+    "@types/vscode": "^1.74.0",
+    "@vscode/vsce": "^2.22.0",
+    "esbuild": "^0.25.9",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.0.1",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "copilot-chat-analyzer": "^0.0.3",
+    "graphql-ws": "^6.0.6"
+  }
+}

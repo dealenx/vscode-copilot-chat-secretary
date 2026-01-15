@@ -1,0 +1,34 @@
+.vscode/**
+.git
+.gitignore
+.gitmodules
+.gitattributes
+.gitpod.yml
+.github/**
+**/*.ts
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+.nyc_output
+out/test/**
+src/**
+**/*.(ts|map)
+.vscode-test/**
+**/*.vsix
+.editorconfig
+
+# Include only compiled JS files
+!out/**/*.js
+
+# Exclude large video files 
+resources/Code 2025-08-11v2.mp4
+resources/*.mp4
+
+# Node modules
+node_modules
+pnpm-lock.yaml
+package-lock.json
+
+# Development files
+tsconfig.json
+src/
