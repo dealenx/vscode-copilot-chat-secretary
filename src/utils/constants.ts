@@ -23,6 +23,14 @@ export const COMMANDS = {
   SHOW_LOGS: "copilotChatSecretary.showLogs",
 } as const;
 
+// External API Command IDs
+export const API_COMMANDS = {
+  GET_STATUS: "copilotChatSecretary.api.getStatus",
+  GET_CURRENT_DIALOG: "copilotChatSecretary.api.getCurrentDialog",
+  GET_DIALOG_HISTORY: "copilotChatSecretary.api.getDialogHistory",
+  GET_SESSION: "copilotChatSecretary.api.getSession",
+} as const;
+
 // Configuration keys
 export const CONFIG_KEYS = {
   CHECK_INTERVAL: "copilotChatSecretary.checkInterval",

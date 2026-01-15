@@ -70,6 +70,22 @@
         "command": "copilotChatSecretary.copyAIResponse",
         "title": "Copy AI Response",
         "icon": "$(copy)"
+      },
+      {
+        "command": "copilotChatSecretary.api.getStatus",
+        "title": "API: Get Chat Status"
+      },
+      {
+        "command": "copilotChatSecretary.api.getCurrentDialog",
+        "title": "API: Get Current Dialog"
+      },
+      {
+        "command": "copilotChatSecretary.api.getDialogHistory",
+        "title": "API: Get Dialog History"
+      },
+      {
+        "command": "copilotChatSecretary.api.getSession",
+        "title": "API: Get Session"
       }
     ],
     "views": {

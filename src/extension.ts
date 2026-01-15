@@ -5,6 +5,7 @@ import { OpenedDialogTreeProvider } from "./providers/openedDialogTreeProvider";
 import { ProcessedDialogsTreeProvider } from "./providers/processedDialogsTreeProvider";
 import { logger, LogCategory } from "./utils/logger";
 import { COMMANDS } from "./utils/constants";
+import { registerApiCommands } from "./api/commandsApi";
 
 let chatMonitorTreeProvider: ChatMonitorTreeProvider;
 let openedDialogTreeProvider: OpenedDialogTreeProvider;
@@ -266,6 +267,12 @@ export async function activate(context: vscode.ExtensionContext) {
     lastKnownState.requestsCount = currentRequestsCount;
   }, 5000);
 
+  // Register external API commands
+  const apiCommandDisposables = registerApiCommands(
+    chatMonitorTreeProvider,
+    chatMonitorTreeProvider.getSessionsService()
+  );
+
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
@@ -278,6 +285,7 @@ export async function activate(context: vscode.ExtensionContext) {
     copyChatJsonCommand,
     copyRequestMessageCommand,
     copyAIResponseCommand,
+    ...apiCommandDisposables,
     {
       dispose: () => {
         clearInterval(autoRefreshInterval);
