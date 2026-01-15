@@ -76,8 +76,8 @@
         },
         {
           "id": "copilotChatSecretaryRequestsView",
-          "name": "User Requests",
-          "icon": "$(list-ordered)"
+          "name": "Opened Dialog",
+          "icon": "$(comment-discussion)"
         },
         {
           "id": "copilotChatSecretaryProcessedDialogsView",

@@ -1,13 +1,13 @@
 // extension.ts - Copilot Chat Secretary
 import * as vscode from "vscode";
 import { ChatMonitorTreeProvider } from "./providers/chatMonitorTreeProvider";
-import { RequestsTreeProvider } from "./providers/requestsTreeProvider";
+import { OpenedDialogTreeProvider } from "./providers/openedDialogTreeProvider";
 import { ProcessedDialogsTreeProvider } from "./providers/processedDialogsTreeProvider";
 import { logger, LogCategory } from "./utils/logger";
 import { COMMANDS } from "./utils/constants";
 
 let chatMonitorTreeProvider: ChatMonitorTreeProvider;
-let requestsTreeProvider: RequestsTreeProvider;
+let openedDialogTreeProvider: OpenedDialogTreeProvider;
 let processedDialogsTreeProvider: ProcessedDialogsTreeProvider;
 
 /**
@@ -76,21 +76,21 @@ export async function activate(context: vscode.ExtensionContext) {
 
   chatMonitorTreeView.title = `Chat Monitor (v${extensionVersion})`;
 
-  // Create Requests Tree View Provider
-  requestsTreeProvider = new RequestsTreeProvider();
+  // Create Opened Dialog Tree View Provider
+  openedDialogTreeProvider = new OpenedDialogTreeProvider();
 
-  const requestsTreeView = vscode.window.createTreeView(
+  const openedDialogTreeView = vscode.window.createTreeView(
     "copilotChatSecretaryRequestsView",
     {
-      treeDataProvider: requestsTreeProvider,
-      showCollapseAll: false,
+      treeDataProvider: openedDialogTreeProvider,
+      showCollapseAll: true,
     }
   );
 
-  requestsTreeView.title = "User Requests";
+  openedDialogTreeView.title = "Opened Dialog";
 
-  // Connect chat monitor to requests provider
-  chatMonitorTreeProvider.setRequestsProvider(requestsTreeProvider);
+  // Connect chat monitor to opened dialog provider
+  chatMonitorTreeProvider.setOpenedDialogProvider(openedDialogTreeProvider);
 
   // Create Processed Dialogs Tree View Provider
   processedDialogsTreeProvider = new ProcessedDialogsTreeProvider();
@@ -239,7 +239,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
-    requestsTreeView,
+    openedDialogTreeView,
     processedDialogsTreeView,
     refreshCommand,
     showLogsCommand,

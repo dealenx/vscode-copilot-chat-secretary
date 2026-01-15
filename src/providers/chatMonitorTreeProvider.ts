@@ -46,7 +46,7 @@ interface ChatStatus {
   sessionId?: string;
 }
 
-import { RequestsTreeProvider } from "./requestsTreeProvider";
+import { OpenedDialogTreeProvider } from "./openedDialogTreeProvider";
 
 export class ChatMonitorTreeProvider
   implements vscode.TreeDataProvider<ChatMonitorTreeItem>, ChatMonitorService
@@ -63,7 +63,7 @@ export class ChatMonitorTreeProvider
   private isMonitoringActive: boolean = false;
   private chatAnalyzer: CopilotChatAnalyzer;
   private subscribers: Set<ChatMonitorSubscriber> = new Set();
-  private requestsProvider: RequestsTreeProvider | undefined;
+  private openedDialogProvider: OpenedDialogTreeProvider | undefined;
   private sessionsService: DialogSessionsServiceImpl;
   private onSessionRecorded: (() => void) | undefined;
 
@@ -83,8 +83,8 @@ export class ChatMonitorTreeProvider
     this.startAutomaticMonitoring();
   }
 
-  setRequestsProvider(provider: RequestsTreeProvider): void {
-    this.requestsProvider = provider;
+  setOpenedDialogProvider(provider: OpenedDialogTreeProvider): void {
+    this.openedDialogProvider = provider;
   }
 
   setOnSessionRecorded(callback: () => void): void {
@@ -415,14 +415,14 @@ export class ChatMonitorTreeProvider
           }
         }
 
-        // Update requests provider - always update to ensure sync
-        if (this.requestsProvider) {
+        // Update opened dialog provider - always update to ensure sync
+        if (this.openedDialogProvider) {
           console.log(
-            `Updating requests provider with ${this.chatStatus.requests.length} requests`
+            `Updating opened dialog provider with ${this.chatStatus.requests.length} requests`
           );
-          this.requestsProvider.updateRequests(this.chatStatus.requests);
+          this.openedDialogProvider.updateFromChatData(chatData);
         } else {
-          console.log(`No requests provider set`);
+          console.log(`No opened dialog provider set`);
         }
 
         if (statusChanged || hasChanged) {
