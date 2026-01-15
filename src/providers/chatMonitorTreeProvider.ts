@@ -14,14 +14,25 @@ export class ChatMonitorTreeItem extends vscode.TreeItem {
     public readonly command?: vscode.Command,
     public readonly contextValue?: string,
     public readonly iconPath?: string | vscode.ThemeIcon,
-    public readonly tooltip?: string
+    public readonly tooltip?: string,
+    public readonly itemId?: string,
+    public readonly description?: string
   ) {
     super(label, collapsibleState);
     this.command = command;
     this.contextValue = contextValue;
     this.iconPath = iconPath;
     this.tooltip = tooltip;
+    this.id = itemId;
+    this.description = description;
   }
+}
+
+interface ChatRequest {
+  id: string;
+  message: string;
+  timestamp?: number;
+  index: number;
 }
 
 interface ChatStatus {
@@ -32,7 +43,10 @@ interface ChatStatus {
   requestsCount: number;
   lastRequestId?: string;
   statusDetails?: any;
+  requests: ChatRequest[];
 }
+
+import { RequestsTreeProvider } from "./requestsTreeProvider";
 
 export class ChatMonitorTreeProvider
   implements vscode.TreeDataProvider<ChatMonitorTreeItem>, ChatMonitorService
@@ -49,6 +63,7 @@ export class ChatMonitorTreeProvider
   private isMonitoringActive: boolean = false;
   private chatAnalyzer: CopilotChatAnalyzer;
   private subscribers: Set<ChatMonitorSubscriber> = new Set();
+  private requestsProvider: RequestsTreeProvider | undefined;
 
   constructor(private context: vscode.ExtensionContext) {
     this.chatAnalyzer = new CopilotChatAnalyzer();
@@ -58,10 +73,15 @@ export class ChatMonitorTreeProvider
       content: "",
       hasActivity: false,
       requestsCount: 0,
+      requests: [],
     };
 
     // Start monitoring automatically on creation
     this.startAutomaticMonitoring();
+  }
+
+  setRequestsProvider(provider: RequestsTreeProvider): void {
+    this.requestsProvider = provider;
   }
 
   refresh(): void {
@@ -122,86 +142,118 @@ export class ChatMonitorTreeProvider
   async getChildren(
     element?: ChatMonitorTreeItem
   ): Promise<ChatMonitorTreeItem[]> {
-    if (!element) {
-      const items: ChatMonitorTreeItem[] = [];
-
-      // Monitoring status (always active)
-      items.push(
-        new ChatMonitorTreeItem(
-          "🟢 Automatic Monitoring",
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          "monitoringStatus",
-          new vscode.ThemeIcon("eye"),
-          "Copilot chat monitoring is running automatically"
-        )
-      );
-
-      // Current chat status
-      const chatLabel = `${this.getChatStatusEmoji(
-        this.chatStatus.status
-      )} Status: ${this.chatStatus.status}`;
-      items.push(
-        new ChatMonitorTreeItem(
-          chatLabel,
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          "chatStatus",
-          this.getChatStatusIcon(this.chatStatus.status),
-          `Last update: ${this.chatStatus.lastUpdate.toLocaleTimeString()}`
-        )
-      );
-
-      // Requests count
-      const requestsLabel = `📊 Requests: ${this.chatStatus.requestsCount}`;
-      items.push(
-        new ChatMonitorTreeItem(
-          requestsLabel,
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          "requestsCount",
-          new vscode.ThemeIcon("graph"),
-          `Total requests in chat: ${this.chatStatus.requestsCount}`
-        )
-      );
-
-      // Chat activity
-      const activityLabel = this.chatStatus.hasActivity
-        ? "🟢 Active"
-        : "⚪ No Activity";
-      items.push(
-        new ChatMonitorTreeItem(
-          activityLabel,
-          vscode.TreeItemCollapsibleState.None,
-          undefined,
-          "chatActivity",
-          new vscode.ThemeIcon(
-            this.chatStatus.hasActivity ? "pulse" : "circle-outline"
-          ),
-          this.chatStatus.hasActivity
-            ? "Chat activity detected"
-            : "No chat activity"
-        )
-      );
-
-      // Manual refresh button
-      items.push(
-        new ChatMonitorTreeItem(
-          "🔄 Refresh Now",
-          vscode.TreeItemCollapsibleState.None,
-          {
-            command: "copilotChatSecretary.refreshStatus",
-            title: "Refresh Chat Status",
-          },
-          "refreshChatStatus",
-          new vscode.ThemeIcon("refresh")
-        )
-      );
-
-      return items;
+    // This provider only has root level items
+    if (element) {
+      return [];
     }
 
-    return [];
+    // Root level items
+    const items: ChatMonitorTreeItem[] = [];
+
+    // Monitoring status (always active)
+    items.push(
+      new ChatMonitorTreeItem(
+        "🟢 Automatic Monitoring",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        "monitoringStatus",
+        new vscode.ThemeIcon("eye"),
+        "Copilot chat monitoring is running automatically"
+      )
+    );
+
+    // Current chat status
+    const chatLabel = `${this.getChatStatusEmoji(
+      this.chatStatus.status
+    )} Status: ${this.chatStatus.status}`;
+    items.push(
+      new ChatMonitorTreeItem(
+        chatLabel,
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        "chatStatus",
+        this.getChatStatusIcon(this.chatStatus.status),
+        `Last update: ${this.chatStatus.lastUpdate.toLocaleTimeString()}`
+      )
+    );
+
+    // Requests count (simple counter, list is in separate view)
+    items.push(
+      new ChatMonitorTreeItem(
+        `📊 Requests: ${this.chatStatus.requestsCount}`,
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        "requestsCount",
+        new vscode.ThemeIcon("comment-discussion"),
+        `Total user requests in chat: ${this.chatStatus.requestsCount}`
+      )
+    );
+
+    // Chat activity
+    const activityLabel = this.chatStatus.hasActivity
+      ? "🟢 Active"
+      : "⚪ No Activity";
+    items.push(
+      new ChatMonitorTreeItem(
+        activityLabel,
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        "chatActivity",
+        new vscode.ThemeIcon(
+          this.chatStatus.hasActivity ? "pulse" : "circle-outline"
+        ),
+        this.chatStatus.hasActivity
+          ? "Chat activity detected"
+          : "No chat activity"
+      )
+    );
+
+    // Manual refresh button
+    items.push(
+      new ChatMonitorTreeItem(
+        "🔄 Refresh Now",
+        vscode.TreeItemCollapsibleState.None,
+        {
+          command: "copilotChatSecretary.refreshStatus",
+          title: "Refresh Chat Status",
+        },
+        "refreshChatStatus",
+        new vscode.ThemeIcon("refresh")
+      )
+    );
+
+    return items;
+  }
+
+  private truncateMessage(message: string, maxLength: number): string {
+    // Remove newlines and extra spaces
+    const cleanMessage = message.replace(/\s+/g, " ").trim();
+    if (cleanMessage.length <= maxLength) {
+      return cleanMessage;
+    }
+    return cleanMessage.substring(0, maxLength - 3) + "...";
+  }
+
+  private parseRequests(chatData: any): ChatRequest[] {
+    const requests: ChatRequest[] = [];
+
+    if (!chatData.requests || !Array.isArray(chatData.requests)) {
+      return requests;
+    }
+
+    chatData.requests.forEach((request: any, index: number) => {
+      // Extract user message from the request
+      if (request.message && typeof request.message === "string") {
+        requests.push({
+          id: request.variableData?.requestId || `req-${index}`,
+          message: request.message,
+          timestamp: request.timestamp,
+          index: index,
+        });
+      }
+    });
+
+    return requests;
   }
 
   private async checkChatStatus(): Promise<void> {
@@ -288,6 +340,14 @@ export class ChatMonitorTreeProvider
         this.chatStatus.requestsCount = requestsCount;
         this.chatStatus.statusDetails = statusDetails;
         this.chatStatus.lastRequestId = statusDetails.lastRequestId;
+
+        // Parse and store user requests
+        this.chatStatus.requests = this.parseRequests(chatData);
+
+        // Update requests provider
+        if (this.requestsProvider) {
+          this.requestsProvider.updateRequests(this.chatStatus.requests);
+        }
 
         if (statusChanged || hasChanged) {
           console.log(`=== COPILOT CHAT ANALYZER ===`);

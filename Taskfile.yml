@@ -6,7 +6,6 @@ tasks:
       - task: watch
     deps:
       - install
-      - setup
 
   version:
     cmds:
@@ -17,30 +16,17 @@ tasks:
     cmd: pnpm run package
     deps:
       - install
-      - setup
       - type-check
 
   build-fast:
     desc: "Быстрая сборка без переустановки зависимостей"
     cmd: node esbuild.js --production
-    deps:
-      - setup
 
   watch:
     cmd: pnpm run watch
     deps:
       - install
-      - setup
       - type-check
-
-  setup:
-    desc: "Настройка проекта: копирование .env файла"
-
-    cmds:
-      - >
-        {{if eq OS "windows"}} powershell {{end}} cp .env.example .env
-    status:
-      - test -f .env
 
   install:
     cmd: pnpm install && pnpm add graphql-ws

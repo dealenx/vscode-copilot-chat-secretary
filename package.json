@@ -53,6 +53,11 @@
           "id": "copilotChatSecretaryView",
           "name": "Chat Monitor",
           "icon": "$(comment-discussion)"
+        },
+        {
+          "id": "copilotChatSecretaryRequestsView",
+          "name": "User Requests",
+          "icon": "$(list-ordered)"
         }
       ]
     },

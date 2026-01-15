@@ -1,10 +1,12 @@
 // extension.ts - Copilot Chat Secretary
 import * as vscode from "vscode";
 import { ChatMonitorTreeProvider } from "./providers/chatMonitorTreeProvider";
+import { RequestsTreeProvider } from "./providers/requestsTreeProvider";
 import { logger, LogCategory } from "./utils/logger";
 import { COMMANDS } from "./utils/constants";
 
 let chatMonitorTreeProvider: ChatMonitorTreeProvider;
+let requestsTreeProvider: RequestsTreeProvider;
 
 /**
  * Get the ChatMonitorTreeProvider instance for external access
@@ -59,6 +61,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
   chatMonitorTreeView.title = `Chat Monitor (v${extensionVersion})`;
 
+  // Create Requests Tree View Provider
+  requestsTreeProvider = new RequestsTreeProvider();
+
+  const requestsTreeView = vscode.window.createTreeView(
+    "copilotChatSecretaryRequestsView",
+    {
+      treeDataProvider: requestsTreeProvider,
+      showCollapseAll: false,
+    }
+  );
+
+  requestsTreeView.title = "User Requests";
+
+  // Connect chat monitor to requests provider
+  chatMonitorTreeProvider.setRequestsProvider(requestsTreeProvider);
+
   // Register refresh command
   const refreshCommand = vscode.commands.registerCommand(
     COMMANDS.REFRESH_STATUS,
@@ -81,6 +99,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
+    requestsTreeView,
     refreshCommand,
     showLogsCommand,
     {
