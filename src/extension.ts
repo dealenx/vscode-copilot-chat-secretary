@@ -6,6 +6,8 @@ import { ProcessedDialogsTreeProvider } from "./providers/processedDialogsTreePr
 import { logger, LogCategory } from "./utils/logger";
 import { COMMANDS } from "./utils/constants";
 import { registerApiCommands } from "./api/commandsApi";
+import { GetFirstRequestTool } from "./mcp/GetFirstRequestTool";
+import { GetRequestTool } from "./mcp/GetRequestTool";
 
 let chatMonitorTreeProvider: ChatMonitorTreeProvider;
 let openedDialogTreeProvider: OpenedDialogTreeProvider;
@@ -273,6 +275,28 @@ export async function activate(context: vscode.ExtensionContext) {
     chatMonitorTreeProvider.getSessionsService()
   );
 
+  // Register MCP tools
+  const getFirstRequestTool = new GetFirstRequestTool(
+    chatMonitorTreeProvider,
+    chatMonitorTreeProvider.getSessionsService()
+  );
+  const getRequestTool = new GetRequestTool(
+    chatMonitorTreeProvider,
+    chatMonitorTreeProvider.getSessionsService(),
+    context
+  );
+
+  const mcpToolDisposables = [
+    vscode.lm.registerTool(getFirstRequestTool.toolName, getFirstRequestTool),
+    vscode.lm.registerTool(getRequestTool.toolName, getRequestTool),
+  ];
+
+  console.log(
+    "MCP tools registered:",
+    getFirstRequestTool.toolName,
+    getRequestTool.toolName
+  );
+
   // Add subscriptions for cleanup
   context.subscriptions.push(
     chatMonitorTreeView,
@@ -286,6 +310,7 @@ export async function activate(context: vscode.ExtensionContext) {
     copyRequestMessageCommand,
     copyAIResponseCommand,
     ...apiCommandDisposables,
+    ...mcpToolDisposables,
     {
       dispose: () => {
         clearInterval(autoRefreshInterval);

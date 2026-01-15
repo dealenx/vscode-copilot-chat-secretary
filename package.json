@@ -2,7 +2,7 @@
   "name": "copilot-chat-secretary",
   "displayName": "Copilot Chat Secretary",
   "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "dealenx",
   "engines": {
     "vscode": "^1.104.0"
@@ -86,6 +86,61 @@
       {
         "command": "copilotChatSecretary.api.getSession",
         "title": "API: Get Session"
+      }
+    ],
+    "languageModelTools": [
+      {
+        "name": "chat_secretary_get_first_request",
+        "displayName": "Get First Request",
+        "toolReferenceName": "getFirstRequest",
+        "userDescription": "Retrieves the first user request from a Copilot Chat dialog",
+        "modelDescription": "Use this tool to retrieve the first user request from a Copilot Chat dialog. This is useful when context has been compressed and you need to recall the original question. Parameters: sessionId (optional) - if not provided, uses current active dialog. Returns JSON with success, sessionId, firstRequest (first 80 chars), timestamp, and requestsCount.",
+        "icon": "$(comment-discussion)",
+        "tags": [
+          "chat",
+          "context",
+          "history"
+        ],
+        "canBeReferencedInPrompt": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "sessionId": {
+              "type": "string",
+              "description": "Optional: Dialog session ID. If omitted, uses current active dialog."
+            }
+          }
+        }
+      },
+      {
+        "name": "chat_secretary_get_request",
+        "displayName": "Get Request by Index",
+        "toolReferenceName": "getRequest",
+        "userDescription": "Retrieves a specific user request from a dialog by its position/index",
+        "modelDescription": "Use this tool to retrieve a specific user request from a Copilot Chat dialog by its position. Index is 1-based (1 = first request, 2 = second request, etc.). Parameters: index (required) - position of the request (1-based), sessionId (optional) - if not provided, uses current active dialog. Returns JSON with success, sessionId, request text, index, timestamp, and totalRequests.",
+        "icon": "$(comment)",
+        "tags": [
+          "chat",
+          "context",
+          "history"
+        ],
+        "canBeReferencedInPrompt": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "index": {
+              "type": "number",
+              "description": "Position of the request to retrieve (1-based index)"
+            },
+            "sessionId": {
+              "type": "string",
+              "description": "Optional: Dialog session ID. If omitted, uses current active dialog."
+            }
+          },
+          "required": [
+            "index"
+          ]
+        }
       }
     ],
     "views": {

@@ -18,6 +18,7 @@
     "test-*.js",
     "tests",
     "examples",
-    "copilot-chat-analyzer"
+    "copilot-chat-analyzer",
+    "vscode-extension-and-mcp-together-main"
   ]
 }

@@ -108,6 +108,68 @@ interface DialogSessionResponse {
 }
 ```
 
+## MCP Tools
+
+This extension provides MCP (Model Context Protocol) tools for AI agents in Copilot Chat to retrieve dialog information.
+
+### Available MCP Tools
+
+| Tool Name                                  | Description                                |
+| ------------------------------------------ | ------------------------------------------ |
+| `copilot_chat_secretary_get_first_request` | Get first user request from dialog         |
+| `copilot_chat_secretary_get_request`       | Get specific request by position (1-based) |
+
+### MCP Tool Usage
+
+#### Get First Request
+
+Retrieves the first user request from a dialog (preview, up to 80 characters).
+
+```typescript
+// From current active dialog
+copilot_chat_secretary_get_first_request()
+
+// From specific dialog
+copilot_chat_secretary_get_first_request({ sessionId: "abc-123" })
+
+// Returns:
+{
+  "success": true,
+  "sessionId": "abc-123-def-456",
+  "firstRequest": "Как создать React компонент?",
+  "timestamp": 1768490000000,
+  "requestsCount": 5
+}
+```
+
+#### Get Request by Index
+
+Retrieves a specific user request by position (full text).
+
+```typescript
+// Get 2nd request from current dialog
+copilot_chat_secretary_get_request({ index: 2 })
+
+// Get 3rd request from specific dialog
+copilot_chat_secretary_get_request({ index: 3, sessionId: "abc-123" })
+
+// Returns:
+{
+  "success": true,
+  "sessionId": "abc-123-def-456",
+  "request": "Добавь валидацию формы",
+  "index": 2,
+  "timestamp": 1768490500000,
+  "totalRequests": 5
+}
+```
+
+**Use cases for AI agents:**
+
+- Recall original question after context compression
+- Reference specific requests from conversation history
+- Understand initial context when user asks "what was my original question?"
+
 ## Dependencies
 
 - [copilot-chat-analyzer](https://www.npmjs.com/package/copilot-chat-analyzer) - Library for analyzing Copilot chat exports
