@@ -2,7 +2,7 @@
   "name": "copilot-chat-secretary",
   "displayName": "Copilot Chat Secretary",
   "description": "Real-time monitoring and status tracking for VS Code Copilot chat sessions",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "publisher": "dealenx",
   "engines": {
     "vscode": "^1.104.0"
@@ -245,7 +245,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "copilot-chat-analyzer": "file:./copilot-chat-analyzer",
+    "copilot-chat-analyzer": "^0.0.4",
     "graphql-ws": "^6.0.6"
   }
 }
