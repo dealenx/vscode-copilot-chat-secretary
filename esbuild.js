@@ -66,9 +66,6 @@ async function main() {
         outfile: 'out/extension.js',
         external: ['vscode'],
         logLevel: 'info',
-        alias: {
-            'copilot-chat-analyzer': path.resolve(__dirname, 'copilot-chat-analyzer/dist/index.mjs'),
-        },
     });
 
     if (watch) {
