@@ -36,10 +36,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install copilot-chat-analyzer dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: copilot-chat-analyzer
-
       - name: Update version (if manual trigger)
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -64,10 +60,6 @@ jobs:
           else
             echo "prerelease=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Build copilot-chat-analyzer
-        run: pnpm run build
-        working-directory: copilot-chat-analyzer
 
       - name: Build extension
         run: pnpm run build
