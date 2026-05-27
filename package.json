@@ -245,7 +245,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
-    "copilot-chat-analyzer": "0.4.0",
+    "copilot-chat-analyzer": "0.3.0",
     "graphql-ws": "^6.0.6"
   }
 }
